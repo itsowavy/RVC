@@ -1,7 +1,8 @@
 import json
 from enum import Enum
-from typing import Optional, List
+from typing import List
 
+import sounddevice as sd
 from pydantic import BaseModel
 
 
@@ -45,5 +46,5 @@ def set_devices(self, input_device, output_device):
     sd.default.device[1] = self.output_devices_indices[
         self.output_devices.index(output_device)
     ]
-    printt("Input device: %s:%s", str(sd.default.device[0]), input_device)
-    printt("Output device: %s:%s", str(sd.default.device[1]), output_device)
+    print("Input device: %s:%s", str(sd.default.device[0]), input_device)
+    print("Output device: %s:%s", str(sd.default.device[1]), output_device)

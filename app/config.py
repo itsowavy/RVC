@@ -1,7 +1,6 @@
 import multiprocessing
 
 from app.utils import load_setting, save_setting
-from io_device import IODevice
 from constants import INDEX_DIR_PATH, PTH_DIR_PATH
 
 

@@ -11,8 +11,7 @@ sys.path.append(now_dir)
 from utils import get_filepath
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from schemas import StreamRequest, SettingResponse, ConvertRequest, RecordRequest
-from convert import get_vc, vc_single
+from schemas import StreamRequest, SettingResponse, RecordRequest
 from interface import Interface
 from initialize import initialize
 
@@ -115,16 +114,16 @@ def record_stop():
     return {"success": True}
 
 
-@app.post("/convert", status_code=200)
-def convert_file(request: ConvertRequest):
-    get_vc(0.33, 0.33)
-    samplerate, audio_output = vc_single(
-        0, request.source_path, request.pitch, None, "rmvpe", "",
-        0.75, 33, 3, 0.25, 0.33)
-    filepath = get_filepath(request.save_dir_path)
-    save_audio(samplerate, audio_output, filepath)
+# @app.post("/convert", status_code=200)
+# def convert_file(request: ConvertRequest):
+#     get_vc(0.33, 0.33)
+#     samplerate, audio_output = vc_single(
+#         0, request.source_path, request.pitch, None, "rmvpe", "",
+#         0.75, 33, 3, 0.25, 0.33)
+#     filepath = get_filepath(request.save_dir_path)
+#     save_audio(samplerate, audio_output, filepath)
 
-    return {"success": True}
+# return {"success": True}
 
 
 if __name__ == '__main__':

@@ -3,11 +3,12 @@ import os
 from datetime import datetime
 from typing import List
 
-from app.constants import SETTING_FILE_PATH
-from app.io_device import IODevice, DeviceType
+import numpy as np
 import sounddevice as sd
 import torch
-import numpy as np
+
+from app.constants import SETTING_FILE_PATH
+from app.io_device import IODevice, DeviceType
 
 
 def load_setting():
@@ -96,8 +97,8 @@ def phase_vocoder(a, b, fade_out, fade_in):
     w = 2 * np.pi * torch.arange(n // 2 + 1).to(a) + deltaphase
     t = torch.arange(n).unsqueeze(-1).to(a) / n
     result = (
-        a * (fade_out**2)
-        + b * (fade_in**2)
+        a * (fade_out ** 2)
+        + b * (fade_in ** 2)
         + torch.sum(absab * torch.cos(w * t + phia), -1) * window / n
     )
     return result
@@ -114,4 +115,3 @@ def printt(strr, *args):
         print(strr)
     else:
         print(strr % args)
-

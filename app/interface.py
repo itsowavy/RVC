@@ -1,11 +1,11 @@
 import sys
+import threading
+import time
 
 import librosa
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-import threading
-import time
 import torch
 import torch.nn.functional as F
 import torchaudio.transforms as tat
@@ -153,13 +153,13 @@ class Interface:
             + self.block_frame,
             device=self.vc_config.device,
             dtype=torch.float32,
-            )
+        )
         self.input_wav_denoise: torch.Tensor = self.input_wav.clone()
         self.input_wav_res: torch.Tensor = torch.zeros(
             160 * self.input_wav.shape[0] // self.zc,
             device=self.vc_config.device,
             dtype=torch.float32,
-            )
+        )
         self.rms_buffer: np.ndarray = np.zeros(4 * self.zc, dtype="float32")
         self.sola_buffer: torch.Tensor = torch.zeros(
             self.sola_buffer_frame, device=self.vc_config.device, dtype=torch.float32
@@ -233,30 +233,30 @@ class Interface:
             rms = librosa.feature.rms(
                 y=indata, frame_length=4 * self.zc, hop_length=self.zc
             )[:, 2:]
-            self.rms_buffer[:] = indata[-4 * self.zc :]
-            indata = indata[2 * self.zc - self.zc // 2 :]
+            self.rms_buffer[:] = indata[-4 * self.zc:]
+            indata = indata[2 * self.zc - self.zc // 2:]
             db_threhold = (
                 librosa.amplitude_to_db(rms, ref=1.0)[0] < self.config.threhold
             )
             for i in range(db_threhold.shape[0]):
                 if db_threhold[i]:
-                    indata[i * self.zc : (i + 1) * self.zc] = 0
-            indata = indata[self.zc // 2 :]
+                    indata[i * self.zc: (i + 1) * self.zc] = 0
+            indata = indata[self.zc // 2:]
         self.input_wav[: -self.block_frame] = self.input_wav[
-                                              self.block_frame :
+                                              self.block_frame:
                                               ].clone()
-        self.input_wav[-indata.shape[0] :] = torch.from_numpy(indata).to(
+        self.input_wav[-indata.shape[0]:] = torch.from_numpy(indata).to(
             self.vc_config.device
         )
         self.input_wav_res[: -self.block_frame_16k] = self.input_wav_res[
-                                                      self.block_frame_16k :
+                                                      self.block_frame_16k:
                                                       ].clone()
         # input noise reduction and resampling
         if self.config.I_noise_reduce:
             self.input_wav_denoise[: -self.block_frame] = self.input_wav_denoise[
-                                                          self.block_frame :
+                                                          self.block_frame:
                                                           ].clone()
-            input_wav = self.input_wav[-self.sola_buffer_frame - self.block_frame :]
+            input_wav = self.input_wav[-self.sola_buffer_frame - self.block_frame:]
             input_wav = self.tg(
                 input_wav.unsqueeze(0), self.input_wav.unsqueeze(0)
             ).squeeze(0)
@@ -264,16 +264,16 @@ class Interface:
             input_wav[: self.sola_buffer_frame] += (
                 self.nr_buffer * self.fade_out_window
             )
-            self.input_wav_denoise[-self.block_frame :] = input_wav[
-                                                          : self.block_frame
-                                                          ]
-            self.nr_buffer[:] = input_wav[self.block_frame :]
-            self.input_wav_res[-self.block_frame_16k - 160 :] = self.resampler(
-                self.input_wav_denoise[-self.block_frame - 2 * self.zc :]
+            self.input_wav_denoise[-self.block_frame:] = input_wav[
+                                                         : self.block_frame
+                                                         ]
+            self.nr_buffer[:] = input_wav[self.block_frame:]
+            self.input_wav_res[-self.block_frame_16k - 160:] = self.resampler(
+                self.input_wav_denoise[-self.block_frame - 2 * self.zc:]
             )[160:]
         else:
-            self.input_wav_res[-160 * (indata.shape[0] // self.zc + 1) :] = (
-                self.resampler(self.input_wav[-indata.shape[0] - 2 * self.zc :])[
+            self.input_wav_res[-160 * (indata.shape[0] // self.zc + 1):] = (
+                self.resampler(self.input_wav[-indata.shape[0] - 2 * self.zc:])[
                 160:
                 ]
             )
@@ -289,24 +289,24 @@ class Interface:
             if self.resampler2 is not None:
                 infer_wav = self.resampler2(infer_wav)
         elif self.config.I_noise_reduce:
-            infer_wav = self.input_wav_denoise[self.extra_frame :].clone()
+            infer_wav = self.input_wav_denoise[self.extra_frame:].clone()
         else:
-            infer_wav = self.input_wav[self.extra_frame :].clone()
+            infer_wav = self.input_wav[self.extra_frame:].clone()
         # output noise reduction
         if self.config.O_noise_reduce and self.config.function == "vc":
             self.output_buffer[: -self.block_frame] = self.output_buffer[
-                                                      self.block_frame :
+                                                      self.block_frame:
                                                       ].clone()
-            self.output_buffer[-self.block_frame :] = infer_wav[-self.block_frame :]
+            self.output_buffer[-self.block_frame:] = infer_wav[-self.block_frame:]
             infer_wav = self.tg(
                 infer_wav.unsqueeze(0), self.output_buffer.unsqueeze(0)
             ).squeeze(0)
         # volume envelop mixing
         if self.config.rms_mix_rate < 1 and self.config.function == "vc":
             if self.config.I_noise_reduce:
-                input_wav = self.input_wav_denoise[self.extra_frame :]
+                input_wav = self.input_wav_denoise[self.extra_frame:]
             else:
-                input_wav = self.input_wav[self.extra_frame :]
+                input_wav = self.input_wav[self.extra_frame:]
             rms1 = librosa.feature.rms(
                 y=input_wav[: infer_wav.shape[0]].cpu().numpy(),
                 frame_length=4 * self.zc,
@@ -342,9 +342,9 @@ class Interface:
         cor_nom = F.conv1d(conv_input, self.sola_buffer[None, None, :])
         cor_den = torch.sqrt(
             F.conv1d(
-                conv_input**2,
+                conv_input ** 2,
                 torch.ones(1, 1, self.sola_buffer_frame, device=self.vc_config.device),
-                )
+            )
             + 1e-8
         )
         if sys.platform == "darwin":
@@ -367,7 +367,7 @@ class Interface:
                 self.fade_in_window,
             )
         self.sola_buffer[:] = infer_wav[
-                              self.block_frame : self.block_frame + self.sola_buffer_frame
+                              self.block_frame: self.block_frame + self.sola_buffer_frame
                               ]
 
         audio_block = (

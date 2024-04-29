@@ -36,4 +36,3 @@ def _initialize_harvest_workers(input_queue, output_queue):
         p = Harvest(input_queue, output_queue)
         p.daemon = True
         p.start()
-
