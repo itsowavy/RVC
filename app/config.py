@@ -1,7 +1,7 @@
 import multiprocessing
 
 from app.utils import load_setting, save_setting
-from constants import INDEX_DIR_PATH, PTH_DIR_PATH
+from app.constants import INDEX_DIR_PATH, PTH_DIR_PATH
 
 
 class Config:

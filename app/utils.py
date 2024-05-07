@@ -34,7 +34,7 @@ def save_setting(input_device: IODevice, output_device: IODevice, pitch: int):
 
 
 def set_io_devices(input_device: IODevice, output_device: IODevice):
-    sd.default.device = (input_device.index, output_device if output_device.index else None)
+    sd.default.device = (input_device.index, output_device.index if output_device else None)
 
 
 def get_io_devices(update: bool = True):

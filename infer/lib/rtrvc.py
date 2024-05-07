@@ -25,8 +25,7 @@ from configs.config import Config
 
 # config = Config()
 
-mm = M()
-
+mm = None
 
 def printt(strr, *args):
     if len(args) == 0:

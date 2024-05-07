@@ -13,7 +13,7 @@ import torchaudio.transforms as tat
 import infer.lib.rtrvc as rtrvc
 from app.schemas import StreamRequest, RecordRequest
 from app.utils import get_device_samplerate, get_device_channels, phase_vocoder, printt, set_io_devices
-from config import Config, Status
+from app.config import Config, Status
 from configs.config import Config as VcConfig
 from infer.modules.gui import TorchGate
 
