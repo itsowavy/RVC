@@ -6,15 +6,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.utils import get_io_devices
 
-now_dir = os.getcwd()
-sys.path.append(now_dir)
-from utils import get_filepath
+from .utils import get_filepath
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from schemas import StreamRequest, SettingResponse, ConvertRequest, RecordRequest
-from convert import get_vc, vc_single
-from interface import Interface
-from initialize import initialize
+from .schemas import StreamRequest, SettingResponse, ConvertRequest, RecordRequest, SpeakersResponse
+from .interface import Interface
+from .initialize import initialize
+from multiprocessing import Manager, freeze_support
+import infer.lib.rtrvc as rtrvc
+
 
 app = FastAPI()
 
@@ -63,6 +63,12 @@ def get_setting():
         input_devices_list=input_devices,
         output_devices_list=output_devices
     )
+
+
+@app.get("/speakers", status_code=200, response_model=SpeakersResponse)
+def get_speakers():
+    speakers_list = service.get_speakers_list()
+
 
 
 @app.get("/stream/latency", status_code=200)
@@ -115,17 +121,22 @@ def record_stop():
     return {"success": True}
 
 
-@app.post("/convert", status_code=200)
-def convert_file(request: ConvertRequest):
-    get_vc(0.33, 0.33)
-    samplerate, audio_output = vc_single(
-        0, request.source_path, request.pitch, None, "rmvpe", "",
-        0.75, 33, 3, 0.25, 0.33)
-    filepath = get_filepath(request.save_dir_path)
-    save_audio(samplerate, audio_output, filepath)
 
-    return {"success": True}
+# @app.post("/convert", status_code=200)
+# def convert_file(request: ConvertRequest):
+#     get_vc(0.33, 0.33)
+#     samplerate, audio_output = vc_single(
+#         0, request.source_path, request.pitch, None, "rmvpe", "",
+#         0.75, 33, 3, 0.25, 0.33)
+#     filepath = get_filepath(request.save_dir_path)
+#     save_audio(samplerate, audio_output, filepath)
 
+    # return {"success": True}
+
+def main():
+    rtrvc.mm = Manager()
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    freeze_support()
+    main()

@@ -26,3 +26,12 @@ class RecordRequest(BaseModel):
     input_device: IODevice
     save_dir_path: str
     pitch: int
+
+
+class Speaker(BaseModel):
+    name: str
+    is_exist: bool
+
+
+class SpeakersResponse(BaseModel):
+    speakers: List[Speaker]
