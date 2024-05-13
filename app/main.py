@@ -7,7 +7,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 import infer.lib.rtrvc as rtrvc
-from app.utils import get_io_devices, load_speakers_from_json
+from app.service import download_index_pth
+from app.speaker import SpeakerStatus
+from app.utils import get_io_devices, load_speakers_from_json, save_speakers_to_json
 from .initialize import initialize
 from .interface import Interface
 from .schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse
@@ -69,14 +71,27 @@ def get_speakers():
     return SpeakersListResponse(speakers=speakers_list_resp)
 
 
-@app.get("/speakers/downloads", status_code=200)
-def get_speakers_downloads():
+@app.get("/speakers/downloads/{speaker_name}", status_code=200)
+def get_speakers_downloads(speaker_name: str):
     speakers = load_speakers_from_json()
-    speakers_list_resp = [
-        SpeakerResponse(name=speaker.name, status=speaker.status.value)
-        for speaker in speakers
-    ]
-    return SpeakersListResponse(speakers=speakers_list_resp)
+    try:
+        speaker = next((speaker for speaker in speakers if speaker.name == speaker_name))
+    except StopIteration:
+        raise HTTPException(status_code=404, detail="Speaker Not Found.")
+    if speaker.status is not SpeakerStatus.UNAVAILABLE:
+        raise HTTPException(status_code=400, detail="Speaker Status Error.")
+    speaker.status = SpeakerStatus.DOWNLOADING
+    save_speakers_to_json(speakers)
+    try:
+        download_index_pth(speaker_name)
+    except Exception:
+        speaker.status = SpeakerStatus.UNAVAILABLE
+        save_speakers_to_json(speakers)
+        raise HTTPException(status_code=500, detail="Speaker Download Failed.")
+    speaker.status = SpeakerStatus.AVAILABLE
+    save_speakers_to_json(speakers)
+
+    return {"success": True}
 
 
 @app.get("/stream/latency", status_code=200)
