@@ -9,6 +9,7 @@ import pandas as pd
 import sounddevice as sd
 import torch
 
+from app import constants
 from app.constants import SETTING_FILE_PATH, SPEAKERS_FILE_PATH, PTH_DIR_PATH, INDEX_DIR_PATH
 from app.io_device import IODevice, DeviceType
 from app.speaker import Speaker, SpeakerStatus
@@ -110,8 +111,8 @@ def phase_vocoder(a, b, fade_out, fade_in):
 def load_speaker_csv_from_s3():
     s3 = boto3.client(
         "s3",
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+        aws_access_key_id=constants.AWS_ACCESS_KEY,
+        aws_secret_access_key=constants.AWS_SECRET_KEY
     )
     obj = s3.get_object(Bucket="voicechanger-resource", Key="speakers.csv")
     df = pd.read_csv(obj["Body"])
