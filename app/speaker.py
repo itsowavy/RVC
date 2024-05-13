@@ -24,7 +24,9 @@ class Speaker:
         self.status = status
 
     def to_json(self):
-        return json.dumps(self.__dict__)
+        speaker_dict = self.__dict__.copy()
+        speaker_dict['status'] = self.status.value
+        return json.dumps(speaker_dict)
 
     @classmethod
     def from_json(cls, json_str):
