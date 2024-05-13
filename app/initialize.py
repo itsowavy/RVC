@@ -5,6 +5,7 @@ from multiprocessing import cpu_count
 import torch
 
 from app.interface import Interface
+from app.utils import load_latest_speakers, save_speakers_to_json
 
 
 class Harvest(multiprocessing.Process):
@@ -35,9 +36,8 @@ def initialize():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     inp_q, opt_q = _generate_in_out_queue()
     _initialize_harvest_workers(inp_q, opt_q)
-    interface = Interface(device=device, inp_q=inp_q, opt_q=opt_q)
-
-    return interface
+    Interface(device=device, inp_q=inp_q, opt_q=opt_q)
+    _initialize_speaker_status()
 
 
 def _generate_in_out_queue():
@@ -53,3 +53,8 @@ def _initialize_harvest_workers(input_queue, output_queue):
         p = Harvest(input_queue, output_queue)
         p.daemon = True
         p.start()
+
+
+def _initialize_speaker_status():
+    speakers = load_latest_speakers()
+    save_speakers_to_json(speakers)

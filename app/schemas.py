@@ -3,6 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 from app.io_device import IODevice
+from app.speaker import SpeakerStatus
 
 
 class StreamRequest(BaseModel):
@@ -28,10 +29,10 @@ class RecordRequest(BaseModel):
     pitch: int
 
 
-class Speaker(BaseModel):
+class SpeakerResponse(BaseModel):
     name: str
-    is_exist: bool
+    status: str
 
 
-class SpeakersResponse(BaseModel):
-    speakers: List[Speaker]
+class SpeakersListResponse(BaseModel):
+    speakers: List[SpeakerResponse]

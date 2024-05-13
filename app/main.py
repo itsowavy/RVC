@@ -1,18 +1,17 @@
 import os
 import signal
+from multiprocessing import Manager, freeze_support
 
-from fastapi.middleware.cors import CORSMiddleware
-
-from app.utils import get_io_devices
-
-from .utils import get_filepath
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from .schemas import StreamRequest, SettingResponse, ConvertRequest, RecordRequest, SpeakersResponse
-from .interface import Interface
-from .initialize import initialize
-from multiprocessing import Manager, freeze_support
+from fastapi.middleware.cors import CORSMiddleware
+
 import infer.lib.rtrvc as rtrvc
+from app.utils import get_io_devices, load_speakers_from_json
+from .initialize import initialize
+from .interface import Interface
+from .schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse
+from .utils import get_filepath
 
 app = FastAPI()
 
@@ -32,9 +31,6 @@ app.add_middleware(
 @app.on_event("startup")
 def start_up():
     initialize()
-    # rvc_for_realtime.manager = Manager()
-    # rvc_for_realtime.config = Config()
-    # rvc.convert.config = Config()
 
 
 @app.get("/ping", status_code=200)
@@ -63,9 +59,24 @@ def get_setting():
     )
 
 
-@app.get("/speakers", status_code=200, response_model=SpeakersResponse)
+@app.get("/speakers", status_code=200, response_model=SpeakersListResponse)
 def get_speakers():
-    speakers_list = service.get_speakers_list()
+    speakers = load_speakers_from_json()
+    speakers_list_resp = [
+        SpeakerResponse(name=speaker.name, status=speaker.status.value)
+        for speaker in speakers
+    ]
+    return SpeakersListResponse(speakers=speakers_list_resp)
+
+
+@app.get("/speakers/downloads", status_code=200)
+def get_speakers_downloads():
+    speakers = load_speakers_from_json()
+    speakers_list_resp = [
+        SpeakerResponse(name=speaker.name, status=speaker.status.value)
+        for speaker in speakers
+    ]
+    return SpeakersListResponse(speakers=speakers_list_resp)
 
 
 @app.get("/stream/latency", status_code=200)
@@ -127,11 +138,12 @@ def record_stop():
 #     filepath = get_filepath(request.save_dir_path)
 #     save_audio(samplerate, audio_output, filepath)
 
-    # return {"success": True}
+# return {"success": True}
 
 def main():
     rtrvc.mm = Manager()
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
 
 if __name__ == '__main__':
     freeze_support()

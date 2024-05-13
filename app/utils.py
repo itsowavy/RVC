@@ -3,12 +3,15 @@ import os
 from datetime import datetime
 from typing import List
 
+import boto3
 import numpy as np
+import pandas as pd
 import sounddevice as sd
 import torch
 
-from app.constants import SETTING_FILE_PATH
+from app.constants import SETTING_FILE_PATH, SPEAKERS_FILE_PATH, PTH_DIR_PATH, INDEX_DIR_PATH
 from app.io_device import IODevice, DeviceType
+from app.speaker import Speaker, SpeakerStatus
 
 
 def load_setting():
@@ -104,10 +107,51 @@ def phase_vocoder(a, b, fade_out, fade_in):
     return result
 
 
+def load_speaker_csv_from_s3():
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+    )
+    obj = s3.get_object(Bucket="voicechanger-resource", Key="speakers.csv")
+    df = pd.read_csv(obj["Body"])
+    return df
+
+
 def get_filepath(dir_path):
     current_datetime = datetime.now().strftime("%Y.%m.%d_%H-%M-%S.%f")[:-3] + ".wav"
     filepath = os.path.join(dir_path, current_datetime)
     return filepath
+
+
+def load_latest_speakers():
+    df = load_speaker_csv_from_s3()
+    speakers: List[Speaker] = [
+        Speaker(
+            row['name'], row['pth_name'], row['index_name'], row['sid']
+        ) for index, row in df.iterrows()
+    ]
+
+    for s in speakers:
+        pth_path = os.path.join(PTH_DIR_PATH, f"{s.name}.pth")
+        index_path = os.path.join(INDEX_DIR_PATH, f"{s.name}.index")
+        if os.path.exists(pth_path) and os.path.exists(index_path):
+            s.status = SpeakerStatus.AVAILABLE
+
+    return speakers
+
+
+def save_speakers_to_json(speakers: List[Speaker]):
+    speakers_json = [json.loads(s.to_json()) for s in speakers]
+    with open(SPEAKERS_FILE_PATH, 'w') as f:
+        json.dump(speakers_json, f)
+
+
+def load_speakers_from_json() -> List[Speaker]:
+    with open(SPEAKERS_FILE_PATH, 'r') as f:
+        speakers_json = json.load(f)
+        speakers = [Speaker.from_json(s) for s in speakers_json]
+    return speakers
 
 
 def printt(strr, *args):
