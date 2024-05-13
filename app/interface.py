@@ -22,7 +22,6 @@ from infer.modules.gui import TorchGate
 class Interface:
     _instance = None
     _lock = threading.Lock()
-    vc_config = VcConfig()
 
     def __new__(cls, *args, **kwargs):
         with cls._lock:
@@ -36,6 +35,7 @@ class Interface:
         self.device = device
         self.inp_q = inp_q
         self.opt_q = opt_q
+        self.vc_config = VcConfig()
 
     @classmethod
     def get_instance(cls):
