@@ -1,3 +1,4 @@
+import os
 import sys
 import threading
 import time
@@ -11,11 +12,13 @@ import torch.nn.functional as F
 import torchaudio.transforms as tat
 
 import infer.lib.rtrvc as rtrvc
+from app.constants import PTH_DIR_PATH, INDEX_DIR_PATH
 from app.schemas import StreamRequest, RecordRequest
 from app.utils import get_device_samplerate, get_device_channels, phase_vocoder, printt, set_io_devices
 from app.config import Config, Status
 from configs.config import Config as VcConfig
 from infer.modules.gui import TorchGate
+from infer.modules.vc.modules import VC
 
 
 # 싱글톤 클래스
@@ -36,6 +39,7 @@ class Interface:
         self.inp_q = inp_q
         self.opt_q = opt_q
         self.vc_config = VcConfig()
+        self.vc = VC(self.vc_config)
 
     @classmethod
     def get_instance(cls):
@@ -72,6 +76,8 @@ class Interface:
         self.config.input_device = values.input_device
         self.config.output_device = values.output_device
         self.config.pitch = values.pitch
+        self.config.pth_path = os.path.join(PTH_DIR_PATH, f"{values.speaker}.pth")
+        self.config.index_path = os.path.join(INDEX_DIR_PATH, f"{values.speaker}.index")
         set_io_devices(self.config.input_device, self.config.output_device)
 
     def set_record_config(self, values: RecordRequest, file_path):
@@ -81,6 +87,12 @@ class Interface:
         self.config.output_device = None
         set_io_devices(self.config.input_device, None)
         self.config.pitch = values.pitch
+
+    def convert_single(self, sid, input_file_path, pitch, f0_file, f0_method, file_index, file_index2,
+                       index_rate, filter_radius, resample_sr, rms_mix_rate, protect):
+
+        self.vc.vc_single(sid, input_file_path, pitch, f0_file, f0_method, file_index, file_index2,
+                          index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
 
     def stop_vc(self):
         self._change_stream_flag(False)

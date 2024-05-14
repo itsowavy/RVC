@@ -12,7 +12,8 @@ from app.speaker import SpeakerStatus
 from app.utils import get_io_devices, load_speakers_from_json, save_speakers_to_json
 from .initialize import initialize
 from .interface import Interface
-from .schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse
+from .schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse, \
+    ConvertRequest
 from .utils import get_filepath
 
 app = FastAPI()
@@ -144,16 +145,31 @@ def record_stop():
     return {"success": True}
 
 
-# @app.post("/convert", status_code=200)
-# def convert_file(request: ConvertRequest):
-#     get_vc(0.33, 0.33)
-#     samplerate, audio_output = vc_single(
-#         0, request.source_path, request.pitch, None, "rmvpe", "",
-#         0.75, 33, 3, 0.25, 0.33)
-#     filepath = get_filepath(request.save_dir_path)
-#     save_audio(samplerate, audio_output, filepath)
+@app.post("/convert", status_code=200)
+def convert_file(request: ConvertRequest):
+    sid = 0
+    interface = Interface.get_instance()
+    interface.vc.get_vc(sid, 0.33, 0.33)
+    interface.convert_single(
+        sid=sid,
+        input_file_path=request.source_path,
+        pitch=request.pitch,
+        f0_file="",
+        f0_method="rmvpe",
+        file_index=request.speaker,
+        index_rate=0.75,
+        filter_radius=33,
+        resample_sr=0,
+        rms_mix_rate=0.25,
+        protect=0.33
+        )
+    # samplerate, audio_output = vc_single(
+    #     0, request.source_path, request.pitch, None, "rmvpe", "",
+    #     0.75, 33, 3, 0.25, 0.33)
+    # filepath = get_filepath(request.save_dir_path)
+    # save_audio(samplerate, audio_output, filepath)
 
-# return {"success": True}
+    return {"success": True}
 
 def main():
     rtrvc.mm = Manager()

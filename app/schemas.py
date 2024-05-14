@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -10,11 +10,15 @@ class StreamRequest(BaseModel):
     input_device: IODevice
     output_device: IODevice
     pitch: int
+    speaker: str
 
 
-class SettingResponse(StreamRequest):
-    input_devices_list: List[IODevice]
-    output_devices_list: List[IODevice]
+class SettingResponse(BaseModel):
+    input_device: Optional[IODevice]
+    output_device: Optional[IODevice]
+    input_devices_list: Optional[List[IODevice]]
+    output_devices_list: Optional[List[IODevice]]
+    pitch: int
 
 
 class ConvertRequest(BaseModel):
@@ -27,6 +31,7 @@ class RecordRequest(BaseModel):
     input_device: IODevice
     save_dir_path: str
     pitch: int
+    speaker: str
 
 
 class SpeakerResponse(BaseModel):

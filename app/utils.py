@@ -30,8 +30,8 @@ def load_setting():
 def save_setting(input_device: IODevice, output_device: IODevice, pitch: int):
     data_json = {
         "pitch": pitch,
-        "input_device": input_device.input_device.to_json() if input_device else None,
-        "output_device": output_device.output_device.to_json() if output_device else None
+        "input_device": input_device.to_json() if input_device else None,
+        "output_device": output_device.to_json() if output_device else None
     }
     with open(SETTING_FILE_PATH, "w") as f:
         json.dump(data_json, f)
@@ -143,8 +143,8 @@ def load_latest_speakers():
     ]
 
     for s in speakers:
-        pth_path = os.path.join(PTH_DIR_PATH, f"{s.name}.pth")
-        index_path = os.path.join(INDEX_DIR_PATH, f"{s.name}.index")
+        pth_path = os.path.join(PTH_DIR_PATH, s.pth_name)
+        index_path = os.path.join(INDEX_DIR_PATH, s.index_name)
         if os.path.exists(pth_path) and os.path.exists(index_path):
             s.status = SpeakerStatus.AVAILABLE
 
