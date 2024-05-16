@@ -48,7 +48,7 @@ class FeatureInput(object):
 
                 print("Loading rmvpe model")
                 self.model_rmvpe = RMVPE(
-                    "assets/rmvpe/rmvpe.pt", is_half=False, device=device
+                    "models/rmvpe/rmvpe.pt", is_half=False, device=device
                 )
             f0 = self.model_rmvpe.infer_from_audio(x, thred=0.03)
         return f0

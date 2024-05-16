@@ -315,7 +315,7 @@ class RVC:
 
             printt("Loading rmvpe model")
             self.model_rmvpe = RMVPE(
-                "assets/rmvpe/rmvpe.pt",
+                "models/rmvpe/rmvpe.pt",
                 is_half=self.is_half,
                 device=self.device,
                 use_jit=self.config.use_jit,
