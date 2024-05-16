@@ -15,10 +15,10 @@ class Speaker:
     sid: int
     status: SpeakerStatus
 
-    def __init__(self, name: str, pth_path: str, index_name: str, sid: int,
+    def __init__(self, name: str, pth_name: str, index_name: str, sid: int,
                  status: SpeakerStatus = SpeakerStatus.UNAVAILABLE):
         self.name = name
-        self.pth_name = pth_path
+        self.pth_name = pth_name
         self.index_name = index_name
         self.sid = sid
         self.status = status
