@@ -29,7 +29,6 @@ class Speaker:
         return json.dumps(speaker_dict)
 
     @classmethod
-    def from_json(cls, json_str):
-        data = json.loads(json_str)
+    def from_json(cls, data: dict):
         data['status'] = SpeakerStatus(data['status'])
         return cls(**data)
