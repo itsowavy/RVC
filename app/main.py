@@ -172,11 +172,6 @@ def convert_file(request: ConvertRequest):
     )
     filepath = get_filepath(request.save_dir_path)
     save_audio(tgt_sr, audio_opt, filepath)
-    # samplerate, audio_output = vc_single(
-    #     0, request.source_path, request.pitch, None, "rmvpe", "",
-    #     0.75, 33, 3, 0.25, 0.33)
-    # filepath = get_filepath(request.save_dir_path)
-    # save_audio(samplerate, audio_output, filepath)
 
     return {"success": True}
 
