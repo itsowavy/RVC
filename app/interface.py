@@ -85,14 +85,16 @@ class Interface:
         self.config.output_file = audio_file
         self.config.input_device = values.input_device
         self.config.output_device = None
-        set_io_devices(self.config.input_device, None)
+        self.config.pth_path = os.path.join(PTH_DIR_PATH, f"{values.speaker}.pth")
+        self.config.index_path = os.path.join(INDEX_DIR_PATH, f"{values.speaker}.index")
         self.config.pitch = values.pitch
+        set_io_devices(self.config.input_device, None)
 
-    def convert_single(self, sid, input_file_path, pitch, f0_file, f0_method, file_index, file_index2,
+    def convert_single(self, sid, input_file_path, pitch, f0_file, f0_method, file_index,
                        index_rate, filter_radius, resample_sr, rms_mix_rate, protect):
 
-        self.vc.vc_single(sid, input_file_path, pitch, f0_file, f0_method, file_index, file_index2,
-                          index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
+        return self.vc.vc_single(sid, input_file_path, pitch, f0_file, f0_method, file_index, None,
+                                 index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
 
     def stop_vc(self):
         self._change_stream_flag(False)
@@ -102,7 +104,7 @@ class Interface:
             self.stream.close()
             self.stream = None
         if self.config.output_file is not None and not self.config.output_file.closed:
-            self.config.output_file.closed()
+            self.config.output_file.close()
         self.config.output_file = None
 
     def start_vc(self, is_record=False):

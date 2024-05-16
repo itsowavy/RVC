@@ -1,5 +1,6 @@
 import json
 import os
+import wave
 from datetime import datetime
 from typing import List
 
@@ -66,6 +67,20 @@ def get_io_devices(update: bool = True):
                     )
                 )
     return input_devices, output_devices
+
+
+def save_audio(samplerate, audio, save_path):
+    if isinstance(audio, np.ndarray):
+        channels = 1 if audio.ndim == 1 else audio.shape[1]
+        audio = audio.astype(np.int16).tobytes()
+    else:
+        channels = 1
+
+    with wave.open(save_path, 'w') as wav_file:
+        wav_file.setnchannels(channels)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(samplerate)
+        wav_file.writeframes(audio)
 
 
 def get_device_samplerate():

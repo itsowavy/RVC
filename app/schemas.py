@@ -25,6 +25,7 @@ class ConvertRequest(BaseModel):
     source_path: str
     save_dir_path: str
     pitch: int
+    speaker: str
 
 
 class RecordRequest(BaseModel):

@@ -19,6 +19,17 @@ from configs.config import Config
 from sklearn.cluster import MiniBatchKMeans
 import torch, platform
 import numpy as np
+import pathlib
+
+# 원래 read_text 메서드 백업
+original_read_text = pathlib.Path.read_text
+
+def read_text_utf8(self, encoding='utf-8'):
+    return original_read_text(self, encoding=encoding)
+
+# pathlib.Path.read_text 메서드를 우리의 래퍼 함수로 변경
+pathlib.Path.read_text = read_text_utf8
+
 import gradio as gr
 import faiss
 import fairseq
