@@ -46,3 +46,14 @@ torchfcpe
 ffmpy==0.3.1
 python-dotenv>=1.0.0
 av
+einops
+flask
+flask_cors
+gin
+gin_config
+local_attention
+wave
+FreeSimpleGUI
+sounddevice
+noisereduce
+boto3
