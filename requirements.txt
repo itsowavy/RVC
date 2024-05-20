@@ -30,7 +30,7 @@ sympy>=1.11.1
 tabulate>=0.8.10
 PyYAML>=6.0
 pyasn1>=0.4.8
-pyasn1-modules>=0.2.8
+pyasn1_modules>=0.2.8
 fsspec>=2022.11.0
 absl-py>=1.2.0
 audioread
@@ -48,10 +48,10 @@ python-dotenv>=1.0.0
 av
 einops
 flask
-flask_cors
+flask-cors
 gin
-gin_config
-local_attention
+gin-config
+local-attention
 wave
 FreeSimpleGUI
 sounddevice
