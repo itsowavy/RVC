@@ -72,19 +72,21 @@ class Interface:
     def get_latency(self):
         return self.status.latency_stream
 
-    def set_stream_config(self, values: StreamRequest):
+    def set_stream_config(self, values: StreamRequest, sid):
         self.config.input_device = values.input_device
         self.config.output_device = values.output_device
         self.config.pitch = values.pitch
+        self.config.sid = sid
         self.config.pth_path = os.path.join(PTH_DIR_PATH, f"{values.speaker}.pth")
         self.config.index_path = os.path.join(INDEX_DIR_PATH, f"{values.speaker}.index")
         set_io_devices(self.config.input_device, self.config.output_device)
 
-    def set_record_config(self, values: RecordRequest, file_path):
+    def set_record_config(self, values: RecordRequest, file_path, sid):
         audio_file = sf.SoundFile(file_path, mode='w', samplerate=self.config.samplerate, channels=2, format='WAV')
         self.config.output_file = audio_file
         self.config.input_device = values.input_device
         self.config.output_device = None
+        self.config.sid = sid
         self.config.pth_path = os.path.join(PTH_DIR_PATH, f"{values.speaker}.pth")
         self.config.index_path = os.path.join(INDEX_DIR_PATH, f"{values.speaker}.index")
         self.config.pitch = values.pitch

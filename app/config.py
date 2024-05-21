@@ -26,6 +26,7 @@ class Config:
         self.rms_mix_rate: float = 0.0
         self.use_pv: bool = False
         self.output_file = None
+        self.sid = None
 
     def save(self):
         save_setting(self.input_device, self.output_device, self.pitch)

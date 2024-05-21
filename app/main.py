@@ -112,7 +112,14 @@ def stream_start(request: StreamRequest):
     interface = Interface.get_instance()
     if interface.is_streaming():
         return HTTPException(status_code=400, detail="Stream already started.")
-    interface.set_stream_config(request)
+    speakers = load_speakers_from_json()
+    try:
+        speaker = next((speaker for speaker in speakers if speaker.name == request.speaker))
+    except StopIteration:
+        raise HTTPException(status_code=404, detail="Speaker Not Found.")
+    if speaker.status is not SpeakerStatus.AVAILABLE:
+        raise HTTPException(status_code=400, detail="Speaker Status Error.")
+    interface.set_stream_config(request, speaker.sid)
     interface.save_setting()
     interface.start_vc()
 
@@ -134,8 +141,15 @@ def record_start(request: RecordRequest):
     interface = Interface.get_instance()
     if interface.is_recording():
         return HTTPException(status_code=400, detail="Record already started.")
-    filepath = get_filepath(request.save_dir_path)
-    interface.set_record_config(request, filepath)
+    speakers = load_speakers_from_json()
+    try:
+        speaker = next((speaker for speaker in speakers if speaker.name == request.speaker))
+    except StopIteration:
+        raise HTTPException(status_code=404, detail="Speaker Not Found.")
+    if speaker.status is not SpeakerStatus.AVAILABLE:
+        raise HTTPException(status_code=400, detail="Speaker Status Error.")
+    file_path = get_filepath(request.save_dir_path)
+    interface.set_record_config(request, file_path, speaker.sid)
     interface.start_vc(is_record=True)
 
     return {"success": True}
@@ -153,8 +167,15 @@ def record_stop():
 
 @app.post("/convert", status_code=200)
 def convert_file(request: ConvertRequest):
-    sid = f"{request.speaker}.pth"
-    sid_id = 77
+    speakers = load_speakers_from_json()
+    try:
+        speaker = next((speaker for speaker in speakers if speaker.name == request.speaker))
+    except StopIteration:
+        raise HTTPException(status_code=404, detail="Speaker Not Found.")
+    if speaker.status is not SpeakerStatus.AVAILABLE:
+        raise HTTPException(status_code=400, detail="Speaker Status Error.")
+    sid = speaker.pth_name
+    sid_id = speaker.sid
     interface = Interface.get_instance()
     interface.vc.get_vc(sid, 0.33, 0.33)
     _, (tgt_sr, audio_opt) = interface.convert_single(
