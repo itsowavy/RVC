@@ -47,7 +47,7 @@ def health_check():
 
 
 @app.post("/turn-off")
-def shut_down():
+def turn_off():
     interface = Interface.get_instance()
     interface.save_setting()
     shut_down()
