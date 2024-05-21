@@ -57,3 +57,5 @@ FreeSimpleGUI
 sounddevice
 noisereduce
 boto3
+
+# pip install numpy --pre torch torchvision torchaudio --force-reinstall --index-url https://download.pytorch.org/whl/nightly/cu118
