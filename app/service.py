@@ -1,7 +1,18 @@
 import os
 
+import boto3
+
+from app import constants
 from app.constants import PTH_DIR_PATH, INDEX_DIR_PATH
-from app.utils import download_from_s3
+
+
+def download_from_s3(key: str, file_path: str):
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=constants.AWS_ACCESS_KEY,
+        aws_secret_access_key=constants.AWS_SECRET_KEY
+    )
+    s3.download_file('voicechanger-resource', key, file_path)
 
 
 def download_index_pth(speaker_name: str):

@@ -134,15 +134,6 @@ def load_speaker_csv_from_s3():
     return df
 
 
-def download_from_s3(key: str, file_path: str):
-    s3 = boto3.client(
-        "s3",
-        aws_access_key_id=constants.AWS_ACCESS_KEY,
-        aws_secret_access_key=constants.AWS_SECRET_KEY
-    )
-    s3.download_file('voicechanger-resource', key, file_path)
-
-
 def get_filepath(dir_path):
     current_datetime = datetime.now().strftime("%Y.%m.%d_%H-%M-%S.%f")[:-3] + ".wav"
     filepath = os.path.join(dir_path, current_datetime)
@@ -177,10 +168,3 @@ def load_speakers_from_json() -> List[Speaker]:
         speakers_json = json.load(f)
         speakers = [Speaker.from_json(s) for s in speakers_json]
     return speakers
-
-
-def printt(strr, *args):
-    if len(args) == 0:
-        print(strr)
-    else:
-        print(strr % args)

@@ -10,16 +10,16 @@ from dotenv import load_dotenv
 load_dotenv()
 load_dotenv("sha256.env")
 
-import infer.lib.rtrvc as rtrvc
-from app.constants import INDEX_DIR_PATH
-from app.service import download_index_pth
-from app.speaker import SpeakerStatus
-from app.utils import get_io_devices, load_speakers_from_json, save_speakers_to_json
-from .setup import initialize, shut_down
-from .interface import Interface
+if __name__ == '__main__':
+    import infer.lib.rtrvc as rtrvc
+    from app.speaker import SpeakerStatus
+    from app.utils import get_io_devices, load_speakers_from_json, save_speakers_to_json
+    from app.service import download_index_pth
+    from .setup import initialize, shut_down
+    from .interface import Interface
+    from .utils import get_filepath, save_audio
 from .schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse, \
     ConvertRequest
-from .utils import get_filepath, save_audio
 
 app = FastAPI()
 
@@ -175,6 +175,7 @@ def convert_file(request: ConvertRequest):
     save_audio(tgt_sr, audio_opt, filepath)
 
     return {"success": True}
+
 
 def main():
     rtrvc.mm = Manager()
