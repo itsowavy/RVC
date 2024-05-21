@@ -7,6 +7,7 @@ import torch
 from app.interface import Interface
 from app.utils import load_latest_speakers, save_speakers_to_json
 
+processes = []
 
 class Harvest(multiprocessing.Process):
     def __init__(self, inp_q, opt_q):
@@ -40,6 +41,12 @@ def initialize():
     _initialize_speaker_status()
 
 
+def shut_down():
+    for p in processes:
+        p.terminate()
+        p.join()
+
+
 def _generate_in_out_queue():
     inp_q = Queue()
     opt_q = Queue()
@@ -53,8 +60,13 @@ def _initialize_harvest_workers(input_queue, output_queue):
         p = Harvest(input_queue, output_queue)
         p.daemon = True
         p.start()
+        processes.append(p)
 
 
 def _initialize_speaker_status():
     speakers = load_latest_speakers()
     save_speakers_to_json(speakers)
+
+
+def _set_up_rtrvc_manager():
+    pass

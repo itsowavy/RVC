@@ -15,7 +15,7 @@ from app.constants import INDEX_DIR_PATH
 from app.service import download_index_pth
 from app.speaker import SpeakerStatus
 from app.utils import get_io_devices, load_speakers_from_json, save_speakers_to_json
-from .initialize import initialize
+from .setup import initialize, shut_down
 from .interface import Interface
 from .schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse, \
     ConvertRequest
@@ -50,6 +50,7 @@ def health_check():
 def shut_down():
     interface = Interface.get_instance()
     interface.save_setting()
+    shut_down()
     os.kill(os.getpid(), signal.SIGTERM)
 
 
