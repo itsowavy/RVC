@@ -350,6 +350,7 @@ class RVC:
         skip_head,
         return_length,
         f0method,
+        sid_no
     ) -> np.ndarray:
         t1 = ttime()
         with torch.no_grad():
@@ -422,7 +423,7 @@ class RVC:
         feats = F.interpolate(feats.permute(0, 2, 1), scale_factor=2).permute(0, 2, 1)
         feats = feats[:, :p_len, :]
         p_len = torch.LongTensor([p_len]).to(self.device)
-        sid = torch.LongTensor([0]).to(self.device)
+        sid = torch.LongTensor([sid_no]).to(self.device)
         skip_head = torch.LongTensor([skip_head])
         return_length2 = torch.LongTensor([return_length2])
         return_length = torch.LongTensor([return_length])

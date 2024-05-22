@@ -301,6 +301,7 @@ class Interface:
                 self.skip_head,
                 self.return_length,
                 self.config.f0method,
+                self.config.sid
             )
             if self.resampler2 is not None:
                 infer_wav = self.resampler2(infer_wav)
