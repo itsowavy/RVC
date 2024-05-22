@@ -1,8 +1,8 @@
 import argparse
-import os
-import sys
 import json
+import os
 import shutil
+import sys
 from multiprocessing import cpu_count
 
 import torch
@@ -19,7 +19,6 @@ except Exception:  # pylint: disable=broad-exception-caught
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 version_config_list = [
     "v1/32k.json",
@@ -154,12 +153,12 @@ class Config:
             i_device = int(self.device.split(":")[-1])
             self.gpu_name = torch.cuda.get_device_name(i_device)
             if (
-                ("16" in self.gpu_name and "V100" not in self.gpu_name.upper())
-                or "P40" in self.gpu_name.upper()
-                or "P10" in self.gpu_name.upper()
-                or "1060" in self.gpu_name
-                or "1070" in self.gpu_name
-                or "1080" in self.gpu_name
+                    ("16" in self.gpu_name and "V100" not in self.gpu_name.upper())
+                    or "P40" in self.gpu_name.upper()
+                    or "P10" in self.gpu_name.upper()
+                    or "1060" in self.gpu_name
+                    or "1070" in self.gpu_name
+                    or "1080" in self.gpu_name
             ):
                 logger.info("Found GPU %s, force to fp32", self.gpu_name)
                 self.is_half = False
@@ -210,10 +209,10 @@ class Config:
         if self.dml:
             logger.info("Use DirectML instead")
             if (
-                os.path.exists(
-                    "runtime\Lib\site-packages\onnxruntime\capi\DirectML.dll"
-                )
-                == False
+                    os.path.exists(
+                        "runtime\Lib\site-packages\onnxruntime\capi\DirectML.dll"
+                    )
+                    == False
             ):
                 try:
                     os.rename(
@@ -238,10 +237,10 @@ class Config:
             if self.instead:
                 logger.info(f"Use {self.instead} instead")
             if (
-                os.path.exists(
-                    "runtime\Lib\site-packages\onnxruntime\capi\onnxruntime_providers_cuda.dll"
-                )
-                == False
+                    os.path.exists(
+                        "runtime\Lib\site-packages\onnxruntime\capi\onnxruntime_providers_cuda.dll"
+                    )
+                    == False
             ):
                 try:
                     os.rename(

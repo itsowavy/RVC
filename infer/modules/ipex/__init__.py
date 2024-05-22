@@ -1,10 +1,13 @@
+import contextlib
 import os
 import sys
-import contextlib
-import torch
+
 import intel_extension_for_pytorch as ipex  # pylint: disable=import-error, unused-import
-from .hijacks import ipex_hijacks
+import torch
+
 from .attention import attention_init
+from .hijacks import ipex_hijacks
+
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long
 
@@ -152,8 +155,8 @@ def ipex_init():  # pylint: disable=too-many-statements
         # Fix functions with ipex:
         torch.cuda.mem_get_info = lambda device=None: [
             (
-                torch.xpu.get_device_properties(device).total_memory
-                - torch.xpu.memory_allocated(device)
+                    torch.xpu.get_device_properties(device).total_memory
+                    - torch.xpu.memory_allocated(device)
             ),
             torch.xpu.get_device_properties(device).total_memory,
         ]

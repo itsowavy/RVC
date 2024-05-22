@@ -28,7 +28,7 @@ def crop_center(h1, h2):
 
 
 def wave_to_spectrogram(
-    wave, hop_length, n_fft, mid_side=False, mid_side_b2=False, reverse=False
+        wave, hop_length, n_fft, mid_side=False, mid_side_b2=False, reverse=False
 ):
     if reverse:
         wave_left = np.flip(np.asfortranarray(wave[0]))
@@ -52,7 +52,7 @@ def wave_to_spectrogram(
 
 
 def wave_to_spectrogram_mt(
-    wave, hop_length, n_fft, mid_side=False, mid_side_b2=False, reverse=False
+        wave, hop_length, n_fft, mid_side=False, mid_side_b2=False, reverse=False
 ):
     import threading
 
@@ -94,9 +94,9 @@ def combine_spectrograms(specs, mp):
 
     for d in range(1, bands_n + 1):
         h = mp.param["band"][d]["crop_stop"] - mp.param["band"][d]["crop_start"]
-        spec_c[:, offset : offset + h, :l] = specs[d][
-            :, mp.param["band"][d]["crop_start"] : mp.param["band"][d]["crop_stop"], :l
-        ]
+        spec_c[:, offset: offset + h, :l] = specs[d][
+                                            :, mp.param["band"][d]["crop_start"]: mp.param["band"][d]["crop_stop"], :l
+                                            ]
         offset += h
 
     if offset > mp.param["bins"]:
@@ -104,7 +104,7 @@ def combine_spectrograms(specs, mp):
 
     # lowpass fiter
     if (
-        mp.param["pre_filter_start"] > 0
+            mp.param["pre_filter_start"] > 0
     ):  # and mp.param['band'][bands_n]['res_type'] in ['scipy', 'polyphase']:
         if bands_n == 1:
             spec_c = fft_lp_filter(
@@ -113,7 +113,7 @@ def combine_spectrograms(specs, mp):
         else:
             gp = 1
             for b in range(
-                mp.param["pre_filter_start"] + 1, mp.param["pre_filter_stop"]
+                    mp.param["pre_filter_start"] + 1, mp.param["pre_filter_stop"]
             ):
                 g = math.pow(
                     10, -(b - mp.param["pre_filter_start"]) * (3.5 - gp) / 20.0
@@ -130,7 +130,7 @@ def spectrogram_to_image(spec, mode="magnitude"):
             y = np.abs(spec)
         else:
             y = spec
-        y = np.log10(y**2 + 1e-8)
+        y = np.log10(y ** 2 + 1e-8)
     elif mode == "phase":
         if np.iscomplexobj(spec):
             y = np.angle(spec)
@@ -179,19 +179,19 @@ def mask_silence(mag, ref, thres=0.2, min_range=64, fade_size=32):
 
             if s != 0:
                 weight = np.linspace(0, 1, fade_size)
-                mag[:, :, s : s + fade_size] += weight * ref[:, :, s : s + fade_size]
+                mag[:, :, s: s + fade_size] += weight * ref[:, :, s: s + fade_size]
             else:
                 s -= fade_size
 
             if e != mag.shape[2]:
                 weight = np.linspace(1, 0, fade_size)
-                mag[:, :, e - fade_size : e] += weight * ref[:, :, e - fade_size : e]
+                mag[:, :, e - fade_size: e] += weight * ref[:, :, e - fade_size: e]
             else:
                 e += fade_size
 
-            mag[:, :, s + fade_size : e - fade_size] += ref[
-                :, :, s + fade_size : e - fade_size
-            ]
+            mag[:, :, s + fade_size: e - fade_size] += ref[
+                                                       :, :, s + fade_size: e - fade_size
+                                                       ]
             old_e = e
 
     return mag
@@ -357,17 +357,17 @@ def cmb_spectrogram_to_wave(spec_m, mp, extra_bins_h=None, extra_bins=None):
             shape=(2, bp["n_fft"] // 2 + 1, spec_m.shape[2]), dtype=complex
         )
         h = bp["crop_stop"] - bp["crop_start"]
-        spec_s[:, bp["crop_start"] : bp["crop_stop"], :] = spec_m[
-            :, offset : offset + h, :
-        ]
+        spec_s[:, bp["crop_start"]: bp["crop_stop"], :] = spec_m[
+                                                          :, offset: offset + h, :
+                                                          ]
 
         offset += h
         if d == bands_n:  # higher
             if extra_bins_h:  # if --high_end_process bypass
                 max_bin = bp["n_fft"] // 2
-                spec_s[:, max_bin - extra_bins_h : max_bin, :] = extra_bins[
-                    :, :extra_bins_h, :
-                ]
+                spec_s[:, max_bin - extra_bins_h: max_bin, :] = extra_bins[
+                                                                :, :extra_bins_h, :
+                                                                ]
             if bp["hpf_start"] > 0:
                 spec_s = fft_hp_filter(spec_s, bp["hpf_start"], bp["hpf_stop"] - 1)
             if bands_n == 1:
@@ -441,7 +441,7 @@ def fft_hp_filter(spec, bin_start, bin_stop):
         g -= 1 / (bin_start - bin_stop)
         spec[:, b, :] = g * spec[:, b, :]
 
-    spec[:, 0 : bin_stop + 1, :] *= 0
+    spec[:, 0: bin_stop + 1, :] *= 0
 
     return spec
 
@@ -451,12 +451,12 @@ def mirroring(a, spec_m, input_high_end, mp):
         mirror = np.flip(
             np.abs(
                 spec_m[
-                    :,
-                    mp.param["pre_filter_start"]
-                    - 10
-                    - input_high_end.shape[1] : mp.param["pre_filter_start"]
-                    - 10,
-                    :,
+                :,
+                mp.param["pre_filter_start"]
+                - 10
+                - input_high_end.shape[1]: mp.param["pre_filter_start"]
+                                           - 10,
+                :,
                 ]
             ),
             1,
@@ -471,12 +471,12 @@ def mirroring(a, spec_m, input_high_end, mp):
         mirror = np.flip(
             np.abs(
                 spec_m[
-                    :,
-                    mp.param["pre_filter_start"]
-                    - 10
-                    - input_high_end.shape[1] : mp.param["pre_filter_start"]
-                    - 10,
-                    :,
+                :,
+                mp.param["pre_filter_start"]
+                - 10
+                - input_high_end.shape[1]: mp.param["pre_filter_start"]
+                                           - 10,
+                :,
                 ]
             ),
             1,
@@ -524,7 +524,6 @@ def istft(spec, hl):
 
 if __name__ == "__main__":
     import argparse
-    import sys
     import time
 
     import cv2

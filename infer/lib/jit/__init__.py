@@ -1,9 +1,10 @@
-from io import BytesIO
 import pickle
 import time
+from collections import OrderedDict
+from io import BytesIO
+
 import torch
 from tqdm import tqdm
-from collections import OrderedDict
 
 
 def load_inputs(path, device, is_half=False):
@@ -18,7 +19,7 @@ def load_inputs(path, device, is_half=False):
 
 
 def benchmark(
-    model, inputs_path, device=torch.device("cpu"), epoch=1000, is_half=False
+        model, inputs_path, device=torch.device("cpu"), epoch=1000, is_half=False
 ):
     parm = load_inputs(inputs_path, device, is_half)
     total_ts = 0.0
@@ -27,7 +28,7 @@ def benchmark(
         start_time = time.perf_counter()
         o = model(**parm)
         total_ts += time.perf_counter() - start_time
-    print(f"num_epoch: {epoch} | avg time(ms): {(total_ts*1000)/epoch}")
+    print(f"num_epoch: {epoch} | avg time(ms): {(total_ts * 1000) / epoch}")
 
 
 def jit_warm_up(model, inputs_path, device=torch.device("cpu"), epoch=5, is_half=False):
@@ -35,12 +36,12 @@ def jit_warm_up(model, inputs_path, device=torch.device("cpu"), epoch=5, is_half
 
 
 def to_jit_model(
-    model_path,
-    model_type: str,
-    mode: str = "trace",
-    inputs_path: str = None,
-    device=torch.device("cpu"),
-    is_half=False,
+        model_path,
+        model_type: str,
+        mode: str = "trace",
+        inputs_path: str = None,
+        device=torch.device("cpu"),
+        is_half=False,
 ):
     model = None
     if model_type.lower() == "synthesizer":
@@ -74,11 +75,11 @@ def to_jit_model(
 
 
 def export(
-    model: torch.nn.Module,
-    mode: str = "trace",
-    inputs: dict = None,
-    device=torch.device("cpu"),
-    is_half: bool = False,
+        model: torch.nn.Module,
+        mode: str = "trace",
+        inputs: dict = None,
+        device=torch.device("cpu"),
+        is_half: bool = False,
 ) -> dict:
     model = model.half() if is_half else model.float()
     model.eval()
@@ -110,12 +111,12 @@ def save(ckpt: dict, save_path: str):
 
 
 def rmvpe_jit_export(
-    model_path: str,
-    mode: str = "script",
-    inputs_path: str = None,
-    save_path: str = None,
-    device=torch.device("cpu"),
-    is_half=False,
+        model_path: str,
+        mode: str = "script",
+        inputs_path: str = None,
+        save_path: str = None,
+        device=torch.device("cpu"),
+        is_half=False,
 ):
     if not save_path:
         save_path = model_path.rstrip(".pth")
@@ -135,12 +136,12 @@ def rmvpe_jit_export(
 
 
 def synthesizer_jit_export(
-    model_path: str,
-    mode: str = "script",
-    inputs_path: str = None,
-    save_path: str = None,
-    device=torch.device("cpu"),
-    is_half=False,
+        model_path: str,
+        mode: str = "script",
+        inputs_path: str = None,
+        save_path: str = None,
+        device=torch.device("cpu"),
+        is_half=False,
 ):
     if not save_path:
         save_path = model_path.rstrip(".pth")

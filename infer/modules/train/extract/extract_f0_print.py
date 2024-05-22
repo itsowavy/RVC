@@ -95,7 +95,7 @@ class FeatureInput(object):
     def coarse_f0(self, f0):
         f0_mel = 1127 * np.log(1 + f0 / 700)
         f0_mel[f0_mel > 0] = (f0_mel[f0_mel > 0] - self.f0_mel_min) * (
-            self.f0_bin - 2
+                self.f0_bin - 2
         ) / (self.f0_mel_max - self.f0_mel_min) + 1
 
         # use 0 or 1
@@ -119,8 +119,8 @@ class FeatureInput(object):
                     if idx % n == 0:
                         printt("f0ing,now-%s,all-%s,-%s" % (idx, len(paths), inp_path))
                     if (
-                        os.path.exists(opt_path1 + ".npy") == True
-                        and os.path.exists(opt_path2 + ".npy") == True
+                            os.path.exists(opt_path1 + ".npy") == True
+                            and os.path.exists(opt_path2 + ".npy") == True
                     ):
                         continue
                     featur_pit = self.compute_f0(inp_path, f0_method)

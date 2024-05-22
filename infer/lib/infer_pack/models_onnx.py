@@ -1,13 +1,12 @@
-import math
 import logging
+import math
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-import numpy as np
 import torch
 from torch import nn
-from torch.nn import AvgPool1d, Conv1d, Conv2d, ConvTranspose1d
+from torch.nn import Conv1d, Conv2d, ConvTranspose1d
 from torch.nn import functional as F
 from torch.nn.utils import remove_weight_norm, spectral_norm, weight_norm
 
@@ -20,16 +19,16 @@ has_xpu = bool(hasattr(torch, "xpu") and torch.xpu.is_available())
 
 class TextEncoder(nn.Module):
     def __init__(
-        self,
-        in_channels,
-        out_channels,
-        hidden_channels,
-        filter_channels,
-        n_heads,
-        n_layers,
-        kernel_size,
-        p_dropout,
-        f0=True,
+            self,
+            in_channels,
+            out_channels,
+            hidden_channels,
+            filter_channels,
+            n_heads,
+            n_layers,
+            kernel_size,
+            p_dropout,
+            f0=True,
     ):
         super(TextEncoder, self).__init__()
         self.out_channels = out_channels
@@ -54,11 +53,11 @@ class TextEncoder(nn.Module):
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
     def forward(
-        self,
-        phone: torch.Tensor,
-        pitch: torch.Tensor,
-        lengths: torch.Tensor,
-        skip_head: Optional[torch.Tensor] = None,
+            self,
+            phone: torch.Tensor,
+            pitch: torch.Tensor,
+            lengths: torch.Tensor,
+            skip_head: Optional[torch.Tensor] = None,
     ):
         if pitch is None:
             x = self.emb_phone(phone)
@@ -78,14 +77,14 @@ class TextEncoder(nn.Module):
 
 class ResidualCouplingBlock(nn.Module):
     def __init__(
-        self,
-        channels,
-        hidden_channels,
-        kernel_size,
-        dilation_rate,
-        n_layers,
-        n_flows=4,
-        gin_channels=0,
+            self,
+            channels,
+            hidden_channels,
+            kernel_size,
+            dilation_rate,
+            n_layers,
+            n_flows=4,
+            gin_channels=0,
     ):
         super(ResidualCouplingBlock, self).__init__()
         self.channels = channels
@@ -112,11 +111,11 @@ class ResidualCouplingBlock(nn.Module):
             self.flows.append(modules.Flip())
 
     def forward(
-        self,
-        x: torch.Tensor,
-        x_mask: torch.Tensor,
-        g: Optional[torch.Tensor] = None,
-        reverse: bool = False,
+            self,
+            x: torch.Tensor,
+            x_mask: torch.Tensor,
+            g: Optional[torch.Tensor] = None,
+            reverse: bool = False,
     ):
         if not reverse:
             for flow in self.flows:
@@ -134,8 +133,8 @@ class ResidualCouplingBlock(nn.Module):
         for i in range(self.n_flows):
             for hook in self.flows[i * 2]._forward_pre_hooks.values():
                 if (
-                    hook.__module__ == "torch.nn.utils.weight_norm"
-                    and hook.__class__.__name__ == "WeightNorm"
+                        hook.__module__ == "torch.nn.utils.weight_norm"
+                        and hook.__class__.__name__ == "WeightNorm"
                 ):
                     torch.nn.utils.remove_weight_norm(self.flows[i * 2])
 
@@ -144,14 +143,14 @@ class ResidualCouplingBlock(nn.Module):
 
 class PosteriorEncoder(nn.Module):
     def __init__(
-        self,
-        in_channels,
-        out_channels,
-        hidden_channels,
-        kernel_size,
-        dilation_rate,
-        n_layers,
-        gin_channels=0,
+            self,
+            in_channels,
+            out_channels,
+            hidden_channels,
+            kernel_size,
+            dilation_rate,
+            n_layers,
+            gin_channels=0,
     ):
         super(PosteriorEncoder, self).__init__()
         self.in_channels = in_channels
@@ -173,7 +172,7 @@ class PosteriorEncoder(nn.Module):
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
     def forward(
-        self, x: torch.Tensor, x_lengths: torch.Tensor, g: Optional[torch.Tensor] = None
+            self, x: torch.Tensor, x_lengths: torch.Tensor, g: Optional[torch.Tensor] = None
     ):
         x_mask = torch.unsqueeze(commons.sequence_mask(x_lengths, x.size(2)), 1).to(
             x.dtype
@@ -191,8 +190,8 @@ class PosteriorEncoder(nn.Module):
     def __prepare_scriptable__(self):
         for hook in self.enc._forward_pre_hooks.values():
             if (
-                hook.__module__ == "torch.nn.utils.weight_norm"
-                and hook.__class__.__name__ == "WeightNorm"
+                    hook.__module__ == "torch.nn.utils.weight_norm"
+                    and hook.__class__.__name__ == "WeightNorm"
             ):
                 torch.nn.utils.remove_weight_norm(self.enc)
         return self
@@ -200,15 +199,15 @@ class PosteriorEncoder(nn.Module):
 
 class Generator(torch.nn.Module):
     def __init__(
-        self,
-        initial_channel,
-        resblock,
-        resblock_kernel_sizes,
-        resblock_dilation_sizes,
-        upsample_rates,
-        upsample_initial_channel,
-        upsample_kernel_sizes,
-        gin_channels=0,
+            self,
+            initial_channel,
+            resblock,
+            resblock_kernel_sizes,
+            resblock_dilation_sizes,
+            upsample_rates,
+            upsample_initial_channel,
+            upsample_kernel_sizes,
+            gin_channels=0,
     ):
         super(Generator, self).__init__()
         self.num_kernels = len(resblock_kernel_sizes)
@@ -223,7 +222,7 @@ class Generator(torch.nn.Module):
             self.ups.append(
                 weight_norm(
                     ConvTranspose1d(
-                        upsample_initial_channel // (2**i),
+                        upsample_initial_channel // (2 ** i),
                         upsample_initial_channel // (2 ** (i + 1)),
                         k,
                         u,
@@ -236,7 +235,7 @@ class Generator(torch.nn.Module):
         for i in range(len(self.ups)):
             ch = upsample_initial_channel // (2 ** (i + 1))
             for j, (k, d) in enumerate(
-                zip(resblock_kernel_sizes, resblock_dilation_sizes)
+                    zip(resblock_kernel_sizes, resblock_dilation_sizes)
             ):
                 self.resblocks.append(resblock(ch, k, d))
 
@@ -275,16 +274,16 @@ class Generator(torch.nn.Module):
                 # because of shadowing, so we check the module name directly.
                 # https://github.com/pytorch/pytorch/blob/be0ca00c5ce260eb5bcec3237357f7a30cc08983/torch/nn/utils/__init__.py#L3
                 if (
-                    hook.__module__ == "torch.nn.utils.weight_norm"
-                    and hook.__class__.__name__ == "WeightNorm"
+                        hook.__module__ == "torch.nn.utils.weight_norm"
+                        and hook.__class__.__name__ == "WeightNorm"
                 ):
                     torch.nn.utils.remove_weight_norm(l)
 
         for l in self.resblocks:
             for hook in l._forward_pre_hooks.values():
                 if (
-                    hook.__module__ == "torch.nn.utils.weight_norm"
-                    and hook.__class__.__name__ == "WeightNorm"
+                        hook.__module__ == "torch.nn.utils.weight_norm"
+                        and hook.__class__.__name__ == "WeightNorm"
                 ):
                     torch.nn.utils.remove_weight_norm(l)
         return self
@@ -313,13 +312,13 @@ class SineGen(torch.nn.Module):
     """
 
     def __init__(
-        self,
-        samp_rate,
-        harmonic_num=0,
-        sine_amp=0.1,
-        noise_std=0.003,
-        voiced_threshold=0,
-        flag_for_pulse=False,
+            self,
+            samp_rate,
+            harmonic_num=0,
+            sine_amp=0.1,
+            noise_std=0.003,
+            voiced_threshold=0,
+            flag_for_pulse=False,
     ):
         super(SineGen, self).__init__()
         self.sine_amp = sine_amp
@@ -351,11 +350,11 @@ class SineGen(torch.nn.Module):
             f0_buf[:, :, 0] = f0[:, :, 0]
             for idx in range(self.harmonic_num):
                 f0_buf[:, :, idx + 1] = f0_buf[:, :, 0] * (
-                    idx + 2
+                        idx + 2
                 )  # idx + 2: the (idx+1)-th overtone, (idx+2)-th harmonic
             rad_values = (
-                f0_buf / self.sampling_rate
-            ) % 1  ###%1意味着n_har的乘积无法后处理优化
+                                 f0_buf / self.sampling_rate
+                         ) % 1  ###%1意味着n_har的乘积无法后处理优化
             rand_ini = torch.rand(
                 f0_buf.shape[0], f0_buf.shape[2], device=f0_buf.device
             )
@@ -413,13 +412,13 @@ class SourceModuleHnNSF(torch.nn.Module):
     """
 
     def __init__(
-        self,
-        sampling_rate,
-        harmonic_num=0,
-        sine_amp=0.1,
-        add_noise_std=0.003,
-        voiced_threshod=0,
-        is_half=True,
+            self,
+            sampling_rate,
+            harmonic_num=0,
+            sine_amp=0.1,
+            add_noise_std=0.003,
+            voiced_threshod=0,
+            is_half=True,
     ):
         super(SourceModuleHnNSF, self).__init__()
 
@@ -453,17 +452,17 @@ class SourceModuleHnNSF(torch.nn.Module):
 
 class GeneratorNSF(torch.nn.Module):
     def __init__(
-        self,
-        initial_channel,
-        resblock,
-        resblock_kernel_sizes,
-        resblock_dilation_sizes,
-        upsample_rates,
-        upsample_initial_channel,
-        upsample_kernel_sizes,
-        gin_channels,
-        sr,
-        is_half=False,
+            self,
+            initial_channel,
+            resblock,
+            resblock_kernel_sizes,
+            resblock_dilation_sizes,
+            upsample_rates,
+            upsample_initial_channel,
+            upsample_kernel_sizes,
+            gin_channels,
+            sr,
+            is_half=False,
     ):
         super(GeneratorNSF, self).__init__()
         self.num_kernels = len(resblock_kernel_sizes)
@@ -485,7 +484,7 @@ class GeneratorNSF(torch.nn.Module):
             self.ups.append(
                 weight_norm(
                     ConvTranspose1d(
-                        upsample_initial_channel // (2**i),
+                        upsample_initial_channel // (2 ** i),
                         upsample_initial_channel // (2 ** (i + 1)),
                         k,
                         u,
@@ -494,7 +493,7 @@ class GeneratorNSF(torch.nn.Module):
                 )
             )
             if i + 1 < len(upsample_rates):
-                stride_f0 = math.prod(upsample_rates[i + 1 :])
+                stride_f0 = math.prod(upsample_rates[i + 1:])
                 self.noise_convs.append(
                     Conv1d(
                         1,
@@ -511,7 +510,7 @@ class GeneratorNSF(torch.nn.Module):
         for i in range(len(self.ups)):
             ch = upsample_initial_channel // (2 ** (i + 1))
             for j, (k, d) in enumerate(
-                zip(resblock_kernel_sizes, resblock_dilation_sizes)
+                    zip(resblock_kernel_sizes, resblock_dilation_sizes)
             ):
                 self.resblocks.append(resblock(ch, k, d))
 
@@ -570,15 +569,15 @@ class GeneratorNSF(torch.nn.Module):
                 # because of shadowing, so we check the module name directly.
                 # https://github.com/pytorch/pytorch/blob/be0ca00c5ce260eb5bcec3237357f7a30cc08983/torch/nn/utils/__init__.py#L3
                 if (
-                    hook.__module__ == "torch.nn.utils.weight_norm"
-                    and hook.__class__.__name__ == "WeightNorm"
+                        hook.__module__ == "torch.nn.utils.weight_norm"
+                        and hook.__class__.__name__ == "WeightNorm"
                 ):
                     torch.nn.utils.remove_weight_norm(l)
         for l in self.resblocks:
             for hook in self.resblocks._forward_pre_hooks.values():
                 if (
-                    hook.__module__ == "torch.nn.utils.weight_norm"
-                    and hook.__class__.__name__ == "WeightNorm"
+                        hook.__module__ == "torch.nn.utils.weight_norm"
+                        and hook.__class__.__name__ == "WeightNorm"
                 ):
                     torch.nn.utils.remove_weight_norm(l)
         return self
@@ -593,27 +592,27 @@ sr2sr = {
 
 class SynthesizerTrnMsNSFsidM(nn.Module):
     def __init__(
-        self,
-        spec_channels,
-        segment_size,
-        inter_channels,
-        hidden_channels,
-        filter_channels,
-        n_heads,
-        n_layers,
-        kernel_size,
-        p_dropout,
-        resblock,
-        resblock_kernel_sizes,
-        resblock_dilation_sizes,
-        upsample_rates,
-        upsample_initial_channel,
-        upsample_kernel_sizes,
-        spk_embed_dim,
-        gin_channels,
-        sr,
-        encoder_dim,
-        **kwargs
+            self,
+            spec_channels,
+            segment_size,
+            inter_channels,
+            hidden_channels,
+            filter_channels,
+            n_heads,
+            n_layers,
+            kernel_size,
+            p_dropout,
+            resblock,
+            resblock_kernel_sizes,
+            resblock_dilation_sizes,
+            upsample_rates,
+            upsample_initial_channel,
+            upsample_kernel_sizes,
+            spk_embed_dim,
+            gin_channels,
+            sr,
+            encoder_dim,
+            **kwargs
     ):
         super(SynthesizerTrnMsNSFsidM, self).__init__()
         if isinstance(sr, str):

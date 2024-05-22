@@ -3,10 +3,10 @@ import signal
 from multiprocessing import Manager, freeze_support
 
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from dotenv import load_dotenv
 load_dotenv()
 load_dotenv("sha256.env")
 

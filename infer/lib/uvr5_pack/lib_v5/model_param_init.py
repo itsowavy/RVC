@@ -1,5 +1,4 @@
 import json
-import os
 import pathlib
 
 default_param = {}
@@ -10,7 +9,6 @@ default_param["sr"] = 44100
 default_param["pre_filter_start"] = 757
 default_param["pre_filter_stop"] = 768
 default_param["band"] = {}
-
 
 default_param["band"][1] = {
     "sr": 11025,

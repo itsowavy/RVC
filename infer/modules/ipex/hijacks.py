@@ -1,7 +1,8 @@
 import contextlib
 import importlib
+
 import torch
-import intel_extension_for_pytorch as ipex  # pylint: disable=import-error, unused-import
+
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long, unnecessary-lambda, no-else-return
 
@@ -45,9 +46,9 @@ _utils = torch.utils.data._utils
 
 def _shutdown_workers(self):
     if (
-        torch.utils.data._utils is None
-        or torch.utils.data._utils.python_exit_status is True
-        or torch.utils.data._utils.python_exit_status is None
+            torch.utils.data._utils is None
+            or torch.utils.data._utils.python_exit_status is True
+            or torch.utils.data._utils.python_exit_status is None
     ):
         return
     if hasattr(self, "_shutdown") and not self._shutdown:
@@ -81,7 +82,7 @@ class DummyDataParallel(
     torch.nn.Module
 ):  # pylint: disable=missing-class-docstring, unused-argument, too-few-public-methods
     def __new__(
-        cls, module, device_ids=None, output_device=None, dim=0
+            cls, module, device_ids=None, output_device=None, dim=0
     ):  # pylint: disable=unused-argument
         if isinstance(device_ids, list) and len(device_ids) > 1:
             print("IPEX backend doesn't support DataParallel on multiple XPU devices")
@@ -133,7 +134,7 @@ original_torch_cat = torch.cat
 
 def torch_cat(tensor, *args, **kwargs):
     if len(tensor) == 3 and (
-        tensor[0].dtype != tensor[1].dtype or tensor[2].dtype != tensor[1].dtype
+            tensor[0].dtype != tensor[1].dtype or tensor[2].dtype != tensor[1].dtype
     ):
         return original_torch_cat(
             [tensor[0].to(tensor[1].dtype), tensor[1], tensor[2].to(tensor[1].dtype)],
@@ -148,13 +149,13 @@ original_interpolate = torch.nn.functional.interpolate
 
 
 def interpolate(
-    tensor,
-    size=None,
-    scale_factor=None,
-    mode="nearest",
-    align_corners=None,
-    recompute_scale_factor=None,
-    antialias=False,
+        tensor,
+        size=None,
+        scale_factor=None,
+        mode="nearest",
+        align_corners=None,
+        recompute_scale_factor=None,
+        antialias=False,
 ):  # pylint: disable=too-many-arguments
     if antialias or align_corners is not None:
         return_device = tensor.device
@@ -221,7 +222,7 @@ def ipex_hijacks():
             *args, return_xpu(map_location), **kwargs
         ),
         lambda orig_func, *args, map_location=None, **kwargs: map_location is None
-        or check_device(map_location),
+                                                              or check_device(map_location),
     )
     CondFunc(
         "torch.randn",
@@ -263,8 +264,8 @@ def ipex_hijacks():
         "torch.Generator",
         lambda orig_func, device=None: torch.xpu.Generator(device),
         lambda orig_func, device=None: device is not None
-        and device != torch.device("cpu")
-        and device != "cpu",
+                                       and device != torch.device("cpu")
+                                       and device != "cpu",
     )
 
     CondFunc(
@@ -334,8 +335,8 @@ def ipex_hijacks():
             input.to(weight.data.dtype), normalized_shape, weight, *args, **kwargs
         ),
         lambda orig_func, input, normalized_shape=None, weight=None, *args, **kwargs: weight
-        is not None
-        and input.dtype != weight.data.dtype,
+                                                                                      is not None
+                                                                                      and input.dtype != weight.data.dtype,
     )
 
     # Diffusers Float64 (ARC GPUs doesn't support double or Float64):

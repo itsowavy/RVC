@@ -35,10 +35,12 @@ else:
 
     device = torch_directml.device(torch_directml.default_device())
 
+
     def forward_dml(ctx, x, scale):
         ctx.scale = scale
         res = x.clone().detach()
         return res
+
 
     fairseq.modules.grad_multiply.GradMultiply.forward = forward_dml
 

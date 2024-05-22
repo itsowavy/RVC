@@ -5,6 +5,7 @@ import torch
 
 processes = []
 
+
 class Harvest(multiprocessing.Process):
     def __init__(self, inp_q, opt_q):
         multiprocessing.Process.__init__(self)
@@ -64,4 +65,3 @@ def _initialize_speaker_status():
     from app.utils import load_latest_speakers, save_speakers_to_json
     speakers = load_latest_speakers()
     save_speakers_to_json(speakers)
-

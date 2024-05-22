@@ -1,5 +1,4 @@
 import torch
-import intel_extension_for_pytorch as ipex  # pylint: disable=import-error, unused-import
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long
 
@@ -58,7 +57,7 @@ def torch_bmm(input, mat2, *, out=None):
             end_idx = (i + 1) * split_slice_size
             if do_split_2:
                 for i2 in range(
-                    input_tokens // split_2_slice_size
+                        input_tokens // split_2_slice_size
                 ):  # pylint: disable=invalid-name
                     start_idx_2 = i2 * split_2_slice_size
                     end_idx_2 = (i2 + 1) * split_2_slice_size
@@ -82,7 +81,7 @@ original_scaled_dot_product_attention = torch.nn.functional.scaled_dot_product_a
 
 
 def scaled_dot_product_attention(
-    query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False
+        query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False
 ):
     # ARC GPUs can't allocate more than 4GB to a single block, Slice it:
     if len(query.shape) == 3:
@@ -95,7 +94,7 @@ def scaled_dot_product_attention(
 
     block_multiply = query.element_size()
     slice_block_size = (
-        shape_one * query_tokens * shape_four / 1024 / 1024 * block_multiply
+            shape_one * query_tokens * shape_four / 1024 / 1024 * block_multiply
     )
     block_size = batch_size_attention * slice_block_size
 
@@ -114,7 +113,7 @@ def scaled_dot_product_attention(
     split_2_slice_size = query_tokens
     if split_slice_size * slice_block_size > 4:
         slice_block_size2 = (
-            shape_one * split_slice_size * shape_four / 1024 / 1024 * block_multiply
+                shape_one * split_slice_size * shape_four / 1024 / 1024 * block_multiply
         )
         do_split_2 = True
         # Find something divisible with the batch_size_attention
@@ -133,7 +132,7 @@ def scaled_dot_product_attention(
             end_idx = (i + 1) * split_slice_size
             if do_split_2:
                 for i2 in range(
-                    query_tokens // split_2_slice_size
+                        query_tokens // split_2_slice_size
                 ):  # pylint: disable=invalid-name
                     start_idx_2 = i2 * split_2_slice_size
                     end_idx_2 = (i2 + 1) * split_2_slice_size
@@ -160,7 +159,7 @@ def scaled_dot_product_attention(
                                 value[:, start_idx:end_idx, start_idx_2:end_idx_2],
                                 attn_mask=(
                                     attn_mask[
-                                        :, start_idx:end_idx, start_idx_2:end_idx_2
+                                    :, start_idx:end_idx, start_idx_2:end_idx_2
                                     ]
                                     if attn_mask is not None
                                     else attn_mask

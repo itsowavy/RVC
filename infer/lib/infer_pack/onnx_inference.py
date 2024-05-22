@@ -1,9 +1,8 @@
+import logging
+
 import librosa
 import numpy as np
 import onnxruntime
-import soundfile
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +62,12 @@ def get_f0_predictor(f0_predictor, hop_length, sampling_rate, **kargs):
 
 class OnnxRVC:
     def __init__(
-        self,
-        model_path,
-        sr=40000,
-        hop_size=512,
-        vec_path="vec-768-layer-12",
-        device="cpu",
+            self,
+            model_path,
+            sr=40000,
+            hop_size=512,
+            vec_path="vec-768-layer-12",
+            device="cpu",
     ):
         vec_path = f"pretrained/{vec_path}.onnx"
         self.vec_model = ContentVec(vec_path, device)
@@ -96,13 +95,13 @@ class OnnxRVC:
         return (self.model.run(None, onnx_input)[0] * 32767).astype(np.int16)
 
     def inference(
-        self,
-        raw_path,
-        sid,
-        f0_method="dio",
-        f0_up_key=0,
-        pad_time=0.5,
-        cr_threshold=0.02,
+            self,
+            raw_path,
+            sid,
+            f0_method="dio",
+            f0_up_key=0,
+            pad_time=0.5,
+            cr_threshold=0.02,
     ):
         f0_min = 50
         f0_max = 1100
@@ -131,7 +130,7 @@ class OnnxRVC:
         pitch = pitchf.copy()
         f0_mel = 1127 * np.log(1 + pitch / 700)
         f0_mel[f0_mel > 0] = (f0_mel[f0_mel > 0] - f0_mel_min) * 254 / (
-            f0_mel_max - f0_mel_min
+                f0_mel_max - f0_mel_min
         ) + 1
         f0_mel[f0_mel <= 1] = 1
         f0_mel[f0_mel > 255] = 255

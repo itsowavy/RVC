@@ -1,7 +1,9 @@
-import torch
-from infer.lib.rmvpe import STFT
-from torch.nn.functional import conv1d, conv2d
 from typing import Union, Optional
+
+import torch
+from torch.nn.functional import conv1d, conv2d
+
+from infer.lib.rmvpe import STFT
 from .utils import linspace, temperature_sigmoid, amp_to_db
 
 
@@ -31,19 +33,19 @@ class TorchGate(torch.nn.Module):
 
     @torch.no_grad()
     def __init__(
-        self,
-        sr: int,
-        nonstationary: bool = False,
-        n_std_thresh_stationary: float = 1.5,
-        n_thresh_nonstationary: float = 1.3,
-        temp_coeff_nonstationary: float = 0.1,
-        n_movemean_nonstationary: int = 20,
-        prop_decrease: float = 1.0,
-        n_fft: int = 1024,
-        win_length: bool = None,
-        hop_length: int = None,
-        freq_mask_smooth_hz: float = 500,
-        time_mask_smooth_ms: float = 50,
+            self,
+            sr: int,
+            nonstationary: bool = False,
+            n_std_thresh_stationary: float = 1.5,
+            n_thresh_nonstationary: float = 1.3,
+            temp_coeff_nonstationary: float = 0.1,
+            n_movemean_nonstationary: int = 20,
+            prop_decrease: float = 1.0,
+            n_fft: int = 1024,
+            win_length: bool = None,
+            hop_length: int = None,
+            freq_mask_smooth_hz: float = 500,
+            time_mask_smooth_ms: float = 50,
     ):
         super().__init__()
 
@@ -126,7 +128,7 @@ class TorchGate(torch.nn.Module):
 
     @torch.no_grad()
     def _stationary_mask(
-        self, X_db: torch.Tensor, xn: Optional[torch.Tensor] = None
+            self, X_db: torch.Tensor, xn: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Computes a stationary binary mask to filter out noise in a log-magnitude spectrogram.
@@ -187,16 +189,16 @@ class TorchGate(torch.nn.Module):
             are set to 1, and the rest are set to 0.
         """
         X_smoothed = (
-            conv1d(
-                X_abs.reshape(-1, 1, X_abs.shape[-1]),
-                torch.ones(
-                    self.n_movemean_nonstationary,
-                    dtype=X_abs.dtype,
-                    device=X_abs.device,
-                ).view(1, 1, -1),
-                padding="same",
-            ).view(X_abs.shape)
-            / self.n_movemean_nonstationary
+                conv1d(
+                    X_abs.reshape(-1, 1, X_abs.shape[-1]),
+                    torch.ones(
+                        self.n_movemean_nonstationary,
+                        dtype=X_abs.dtype,
+                        device=X_abs.device,
+                    ).view(1, 1, -1),
+                    padding="same",
+                ).view(X_abs.shape)
+                / self.n_movemean_nonstationary
         )
 
         # Compute slowness ratio and apply temperature sigmoid
@@ -208,7 +210,7 @@ class TorchGate(torch.nn.Module):
         return sig_mask
 
     def forward(
-        self, x: torch.Tensor, xn: Optional[torch.Tensor] = None
+            self, x: torch.Tensor, xn: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Apply the proposed algorithm to the input signal.

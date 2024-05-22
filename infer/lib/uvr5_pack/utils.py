@@ -28,7 +28,7 @@ def inference(X_spec, device, model, aggressiveness, data):
     """
 
     def _execute(
-        X_mag_pad, roi_size, n_window, device, model, aggressiveness, is_half=True
+            X_mag_pad, roi_size, n_window, device, model, aggressiveness, is_half=True
     ):
         model.eval()
         with torch.no_grad():
@@ -40,8 +40,8 @@ def inference(X_spec, device, model, aggressiveness, data):
             for i in tqdm(range(n_window)):
                 start = i * roi_size
                 X_mag_window = X_mag_pad[
-                    None, :, :, start : start + data["window_size"]
-                ]
+                               None, :, :, start: start + data["window_size"]
+                               ]
                 X_mag_window = torch.from_numpy(X_mag_window)
                 if is_half:
                     X_mag_window = X_mag_window.half()
@@ -91,7 +91,7 @@ def inference(X_spec, device, model, aggressiveness, data):
         pred_tta = _execute(
             X_mag_pad, roi_size, n_window, device, model, aggressiveness, is_half
         )
-        pred_tta = pred_tta[:, :, roi_size // 2 :]
+        pred_tta = pred_tta[:, :, roi_size // 2:]
         pred_tta = pred_tta[:, :, :n_frame]
 
         return (pred + pred_tta) * 0.5 * coef, X_mag, np.exp(1.0j * X_phase)

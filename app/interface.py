@@ -12,10 +12,10 @@ import torch.nn.functional as F
 import torchaudio.transforms as tat
 
 import infer.lib.rtrvc as rtrvc
+from app.config import Config, Status
 from app.constants import PTH_DIR_PATH, INDEX_DIR_PATH
 from app.schemas import StreamRequest, RecordRequest
 from app.utils import get_device_samplerate, get_device_channels, phase_vocoder, set_io_devices
-from app.config import Config, Status
 from configs.config import Config as VcConfig
 from infer.modules.gui import TorchGate
 from infer.modules.vc.modules import VC
@@ -126,41 +126,42 @@ class Interface:
             self.rvc if hasattr(self, 'rvc') else None
         )
         self.config.samplerate = get_device_samplerate()
+        print("sample rate", self.config.samplerate, flush=True)
 
         self.config.channels = get_device_channels()
         self.zc = self.config.samplerate // 100
         self.block_frame = (
-            int(
-                np.round(
-                    self.config.block_time
-                    * self.config.samplerate
-                    / self.zc
+                int(
+                    np.round(
+                        self.config.block_time
+                        * self.config.samplerate
+                        / self.zc
+                    )
                 )
-            )
-            * self.zc
+                * self.zc
         )
         self.block_frame_16k = 160 * self.block_frame // self.zc
         self.crossfade_frame = (
-            int(
-                np.round(
-                    self.config.crossfade_time
-                    * self.config.samplerate
-                    / self.zc
+                int(
+                    np.round(
+                        self.config.crossfade_time
+                        * self.config.samplerate
+                        / self.zc
+                    )
                 )
-            )
-            * self.zc
+                * self.zc
         )
         self.sola_buffer_frame = min(self.crossfade_frame, 4 * self.zc)
         self.sola_search_frame = self.zc
         self.extra_frame = (
-            int(
-                np.round(
-                    self.config.extra_time
-                    * self.config.samplerate
-                    / self.zc
+                int(
+                    np.round(
+                        self.config.extra_time
+                        * self.config.samplerate
+                        / self.zc
+                    )
                 )
-            )
-            * self.zc
+                * self.zc
         )
         self.input_wav: torch.Tensor = torch.zeros(
             self.extra_frame
@@ -184,21 +185,21 @@ class Interface:
         self.output_buffer: torch.Tensor = self.input_wav.clone()
         self.skip_head = self.extra_frame // self.zc
         self.return_length = (
-                                 self.block_frame + self.sola_buffer_frame + self.sola_search_frame
+                                     self.block_frame + self.sola_buffer_frame + self.sola_search_frame
                              ) // self.zc
         self.fade_in_window: torch.Tensor = (
-            torch.sin(
-                0.5
-                * np.pi
-                * torch.linspace(
-                    0.0,
-                    1.0,
-                    steps=self.sola_buffer_frame,
-                    device=self.vc_config.device,
-                    dtype=torch.float32,
+                torch.sin(
+                    0.5
+                    * np.pi
+                    * torch.linspace(
+                        0.0,
+                        1.0,
+                        steps=self.sola_buffer_frame,
+                        device=self.vc_config.device,
+                        dtype=torch.float32,
+                    )
                 )
-            )
-            ** 2
+                ** 2
         )
         self.fade_out_window: torch.Tensor = 1 - self.fade_in_window
         self.resampler = tat.Resample(
@@ -240,7 +241,7 @@ class Interface:
             self.stream.start()
 
     def __audio_callback(
-        self, indata: np.ndarray, outdata: np.ndarray, frames, times, status
+            self, indata: np.ndarray, outdata: np.ndarray, frames, times, status
     ):
         start_time = time.perf_counter()
         indata = librosa.to_mono(indata.T)
@@ -252,7 +253,7 @@ class Interface:
             self.rms_buffer[:] = indata[-4 * self.zc:]
             indata = indata[2 * self.zc - self.zc // 2:]
             db_threhold = (
-                librosa.amplitude_to_db(rms, ref=1.0)[0] < self.config.threhold
+                    librosa.amplitude_to_db(rms, ref=1.0)[0] < self.config.threhold
             )
             for i in range(db_threhold.shape[0]):
                 if db_threhold[i]:
@@ -278,7 +279,7 @@ class Interface:
             ).squeeze(0)
             input_wav[: self.sola_buffer_frame] *= self.fade_in_window
             input_wav[: self.sola_buffer_frame] += (
-                self.nr_buffer * self.fade_out_window
+                    self.nr_buffer * self.fade_out_window
             )
             self.input_wav_denoise[-self.block_frame:] = input_wav[
                                                          : self.block_frame
@@ -374,7 +375,7 @@ class Interface:
         if "privateuseone" in str(self.vc_config.device) or not self.config.use_pv:
             infer_wav[: self.sola_buffer_frame] *= self.fade_in_window
             infer_wav[: self.sola_buffer_frame] += (
-                self.sola_buffer * self.fade_out_window
+                    self.sola_buffer * self.fade_out_window
             )
         else:
             infer_wav[: self.sola_buffer_frame] = phase_vocoder(
@@ -405,11 +406,11 @@ class Interface:
 
     def __soundinput(self):
         with sd.Stream(
-            channels=2,
-            callback=self.__audio_callback,
-            blocksize=self.block_frame,
-            samplerate=self.config.samplerate,
-            dtype="float32",
+                channels=2,
+                callback=self.__audio_callback,
+                blocksize=self.block_frame,
+                samplerate=self.config.samplerate,
+                dtype="float32",
         ):
             while self.flag_vc:
                 time.sleep(self.config.block_time)

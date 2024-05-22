@@ -3,7 +3,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from app.io_device import IODevice
-from app.speaker import SpeakerStatus
 
 
 class StreamRequest(BaseModel):

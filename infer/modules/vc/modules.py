@@ -1,5 +1,5 @@
-import traceback
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class VC:
 
         if sid == "" or sid == []:
             if (
-                self.hubert_model is not None
+                    self.hubert_model is not None
             ):  # 考虑到轮询, 需要加个判断看是否 sid 是由有模型切换到无模型的
                 logger.info("Clean model cache")
                 del (self.net_g, self.n_spk, self.hubert_model, self.tgt_sr)  # ,cpt
@@ -144,19 +144,19 @@ class VC:
         )
 
     def vc_single(
-        self,
-        sid,
-        input_audio_path,
-        f0_up_key,
-        f0_file,
-        f0_method,
-        file_index,
-        file_index2,
-        index_rate,
-        filter_radius,
-        resample_sr,
-        rms_mix_rate,
-        protect,
+            self,
+            sid,
+            input_audio_path,
+            f0_up_key,
+            f0_file,
+            f0_method,
+            file_index,
+            file_index2,
+            index_rate,
+            filter_radius,
+            resample_sr,
+            rms_mix_rate,
+            protect,
     ):
         if input_audio_path is None:
             return "You need to upload an audio", None
@@ -225,21 +225,21 @@ class VC:
             return info, (None, None)
 
     def vc_multi(
-        self,
-        sid,
-        dir_path,
-        opt_root,
-        paths,
-        f0_up_key,
-        f0_method,
-        file_index,
-        file_index2,
-        index_rate,
-        filter_radius,
-        resample_sr,
-        rms_mix_rate,
-        protect,
-        format1,
+            self,
+            sid,
+            dir_path,
+            opt_root,
+            paths,
+            f0_up_key,
+            f0_method,
+            file_index,
+            file_index2,
+            index_rate,
+            filter_radius,
+            resample_sr,
+            rms_mix_rate,
+            protect,
+            format1,
     ):
         try:
             dir_path = (

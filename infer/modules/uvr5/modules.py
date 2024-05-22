@@ -1,6 +1,6 @@
+import logging
 import os
 import traceback
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +48,8 @@ def uvr(model_name, inp_root, save_root_vocal, paths, save_root_ins, agg, format
             try:
                 info = ffmpeg.probe(inp_path, cmd="ffprobe")
                 if (
-                    info["streams"][0]["channels"] == 2
-                    and info["streams"][0]["sample_rate"] == "44100"
+                        info["streams"][0]["channels"] == 2
+                        and info["streams"][0]["sample_rate"] == "44100"
                 ):
                     need_reformat = 0
                     pre_fun._path_audio_(

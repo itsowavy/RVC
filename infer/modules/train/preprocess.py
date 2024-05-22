@@ -62,7 +62,7 @@ class PreProcess:
             print("%s-%s-%s-filtered" % (idx0, idx1, tmp_max))
             return
         tmp_audio = (tmp_audio / tmp_max * (self.max * self.alpha)) + (
-            1 - self.alpha
+                1 - self.alpha
         ) * tmp_audio
         wavfile.write(
             "%s/%s_%s.wav" % (self.gt_wavs_dir, idx0, idx1),
@@ -92,7 +92,7 @@ class PreProcess:
                     start = int(self.sr * (self.per - self.overlap) * i)
                     i += 1
                     if len(audio[start:]) > self.tail * self.sr:
-                        tmp_audio = audio[start : start + int(self.per * self.sr)]
+                        tmp_audio = audio[start: start + int(self.per * self.sr)]
                         self.norm_write(tmp_audio, idx0, idx1)
                         idx1 += 1
                     else:

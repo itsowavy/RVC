@@ -1,11 +1,11 @@
 import math
 import random
 from typing import Optional, Tuple
-from fairseq.checkpoint_utils import load_model_ensemble_and_task
+
 import numpy as np
 import torch
 import torch.nn.functional as F
-
+from fairseq.checkpoint_utils import load_model_ensemble_and_task
 # from fairseq.data.data_utils import compute_mask_indices
 from fairseq.utils import index_put
 
@@ -26,11 +26,11 @@ def pad_to_multiple(x, multiple, dim=-1, value=0):
 
 
 def extract_features(
-    self,
-    x,
-    padding_mask=None,
-    tgt_layer=None,
-    min_layer=0,
+        self,
+        x,
+        padding_mask=None,
+        tgt_layer=None,
+        min_layer=0,
 ):
     if padding_mask is not None:
         x = index_put(x, padding_mask, 0)
@@ -93,17 +93,17 @@ def extract_features(
 
 
 def compute_mask_indices(
-    shape: Tuple[int, int],
-    padding_mask: Optional[torch.Tensor],
-    mask_prob: float,
-    mask_length: int,
-    mask_type: str = "static",
-    mask_other: float = 0.0,
-    min_masks: int = 0,
-    no_overlap: bool = False,
-    min_space: int = 0,
-    require_same_masks: bool = True,
-    mask_dropout: float = 0.0,
+        shape: Tuple[int, int],
+        padding_mask: Optional[torch.Tensor],
+        mask_prob: float,
+        mask_length: int,
+        mask_type: str = "static",
+        mask_other: float = 0.0,
+        min_masks: int = 0,
+        no_overlap: bool = False,
+        min_space: int = 0,
+        require_same_masks: bool = True,
+        mask_dropout: float = 0.0,
 ) -> torch.Tensor:
     """
     Computes random mask spans for a given shape
@@ -264,7 +264,7 @@ def apply_mask(self, x, padding_mask, target_list):
 
 
 def get_hubert_model(
-    model_path="assets/hubert/hubert_base.pt", device=torch.device("cpu")
+        model_path="assets/hubert/hubert_base.pt", device=torch.device("cpu")
 ):
     models, _, _ = load_model_ensemble_and_task(
         [model_path],
@@ -279,10 +279,10 @@ def get_hubert_model(
     hubert_model.apply_mask = _apply_mask
 
     def _extract_features(
-        x,
-        padding_mask=None,
-        tgt_layer=None,
-        min_layer=0,
+            x,
+            padding_mask=None,
+            tgt_layer=None,
+            min_layer=0,
     ):
         return extract_features(
             hubert_model.encoder,
@@ -297,12 +297,12 @@ def get_hubert_model(
     hubert_model._forward = hubert_model.forward
 
     def hubert_extract_features(
-        self,
-        source: torch.Tensor,
-        padding_mask: Optional[torch.Tensor] = None,
-        mask: bool = False,
-        ret_conv: bool = False,
-        output_layer: Optional[int] = None,
+            self,
+            source: torch.Tensor,
+            padding_mask: Optional[torch.Tensor] = None,
+            mask: bool = False,
+            ret_conv: bool = False,
+            output_layer: Optional[int] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         res = self._forward(
             source,
@@ -315,11 +315,11 @@ def get_hubert_model(
         return feature, res["padding_mask"]
 
     def _hubert_extract_features(
-        source: torch.Tensor,
-        padding_mask: Optional[torch.Tensor] = None,
-        mask: bool = False,
-        ret_conv: bool = False,
-        output_layer: Optional[int] = None,
+            source: torch.Tensor,
+            padding_mask: Optional[torch.Tensor] = None,
+            mask: bool = False,
+            ret_conv: bool = False,
+            output_layer: Optional[int] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         return hubert_extract_features(
             hubert_model, source, padding_mask, mask, ret_conv, output_layer

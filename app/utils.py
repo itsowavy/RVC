@@ -116,9 +116,9 @@ def phase_vocoder(a, b, fade_out, fade_in):
     w = 2 * np.pi * torch.arange(n // 2 + 1).to(a) + deltaphase
     t = torch.arange(n).unsqueeze(-1).to(a) / n
     result = (
-        a * (fade_out ** 2)
-        + b * (fade_in ** 2)
-        + torch.sum(absab * torch.cos(w * t + phia), -1) * window / n
+            a * (fade_out ** 2)
+            + b * (fade_in ** 2)
+            + torch.sum(absab * torch.cos(w * t + phia), -1) * window / n
     )
     return result
 

@@ -1,17 +1,17 @@
 import multiprocessing
 
-from app.utils import load_setting, save_setting
 from app.constants import INDEX_DIR_PATH, PTH_DIR_PATH
+from app.utils import load_setting, save_setting
 
 
 class Config:
     def __init__(self):
         self.input_device, self.output_device, self.pitch = load_setting()
         self.channels = 2
-        self.block_time: float = 0.3
+        self.block_time: float = 0.1
         self.buffer_num: int = 1
         self.threhold: int = -40
-        self.crossfade_time: float = 0.15
+        self.crossfade_time: float = 0.1
         self.extra_time: float = 1.5
         self.I_noise_reduce: bool = False
         self.O_noise_reduce: bool = False

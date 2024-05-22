@@ -1,10 +1,9 @@
-from io import BytesIO
 import os
 import sys
 import traceback
-from infer.lib import jit
-from infer.lib.jit.get_synthesizer import get_synthesizer
+from io import BytesIO
 from time import time as ttime
+
 import fairseq
 import faiss
 import numpy as np
@@ -17,15 +16,18 @@ import torch.nn.functional as F
 import torchcrepe
 from torchaudio.transforms import Resample
 
+from infer.lib import jit
+from infer.lib.jit.get_synthesizer import get_synthesizer
+
 now_dir = os.getcwd()
 sys.path.append(now_dir)
-from multiprocessing import Manager as M
 
 from configs.config import Config
 
 # config = Config()
 
 mm = None
+
 
 def printt(strr, *args):
     if len(args) == 0:
@@ -38,24 +40,23 @@ def printt(strr, *args):
 # config.is_half=False########强制cpu测试
 class RVC:
     def __init__(
-        self,
-        key,
-        formant,
-        pth_path,
-        index_path,
-        index_rate,
-        n_cpu,
-        inp_q,
-        opt_q,
-        config: Config,
-        last_rvc=None,
+            self,
+            key,
+            formant,
+            pth_path,
+            index_path,
+            index_rate,
+            n_cpu,
+            inp_q,
+            opt_q,
+            config: Config,
+            last_rvc=None,
     ) -> None:
         """
         初始化
         """
         try:
             if config.dml == True:
-
                 def forward_dml(ctx, x, scale):
                     ctx.scale = scale
                     res = x.clone().detach()
@@ -207,7 +208,7 @@ class RVC:
         f0 = f0.float().to(self.device).squeeze()
         f0_mel = 1127 * torch.log(1 + f0 / 700)
         f0_mel[f0_mel > 0] = (f0_mel[f0_mel > 0] - self.f0_mel_min) * 254 / (
-            self.f0_mel_max - self.f0_mel_min
+                self.f0_mel_max - self.f0_mel_min
         ) + 1
         f0_mel[f0_mel <= 1] = 1
         f0_mel[f0_mel > 255] = 255
@@ -264,7 +265,7 @@ class RVC:
                 self.inp_q.put((idx, x[:tail], res_f0, n_cpu, ts))
             else:
                 self.inp_q.put(
-                    (idx, x[part_length * idx - 320 : tail], res_f0, n_cpu, ts)
+                    (idx, x[part_length * idx - 320: tail], res_f0, n_cpu, ts)
                 )
         while 1:
             res_ts = self.opt_q.get()
@@ -278,7 +279,7 @@ class RVC:
                 f0 = f0[2:-3]
             else:
                 f0 = f0[2:]
-            f0bak[part_length * idx // 160 : part_length * idx // 160 + f0.shape[0]] = (
+            f0bak[part_length * idx // 160: part_length * idx // 160 + f0.shape[0]] = (
                 f0
             )
         f0bak = signal.medfilt(f0bak, 3)
@@ -287,7 +288,7 @@ class RVC:
 
     def get_f0_crepe(self, x, f0_up_key):
         if "privateuseone" in str(
-            self.device
+                self.device
         ):  ###不支持dml，cpu又太慢用不成，拿fcpe顶替
             return self.get_f0(x, f0_up_key, 1, "fcpe")
         # printt("using crepe,device:%s"%self.device)
@@ -344,13 +345,13 @@ class RVC:
         return self.get_f0_post(f0)
 
     def infer(
-        self,
-        input_wav: torch.Tensor,
-        block_frame_16k,
-        skip_head,
-        return_length,
-        f0method,
-        sid_no
+            self,
+            input_wav: torch.Tensor,
+            block_frame_16k,
+            skip_head,
+            return_length,
+            f0method,
+            sid_no
     ) -> np.ndarray:
         t1 = ttime()
         with torch.no_grad():
@@ -372,7 +373,7 @@ class RVC:
         t2 = ttime()
         try:
             if hasattr(self, "index") and self.index_rate != 0:
-                npy = feats[0][skip_head // 2 :].cpu().numpy().astype("float32")
+                npy = feats[0][skip_head // 2:].cpu().numpy().astype("float32")
                 score, ix = self.index.search(npy, k=8)
                 if (ix >= 0).all():
                     weight = np.square(1 / score)
@@ -382,10 +383,10 @@ class RVC:
                     )
                     if self.config.is_half:
                         npy = npy.astype("float16")
-                    feats[0][skip_head // 2 :] = (
-                        torch.from_numpy(npy).unsqueeze(0).to(self.device)
-                        * self.index_rate
-                        + (1 - self.index_rate) * feats[0][skip_head // 2 :]
+                    feats[0][skip_head // 2:] = (
+                            torch.from_numpy(npy).unsqueeze(0).to(self.device)
+                            * self.index_rate
+                            + (1 - self.index_rate) * feats[0][skip_head // 2:]
                     )
                 else:
                     printt(
@@ -413,11 +414,11 @@ class RVC:
             shift = block_frame_16k // 160
             self.cache_pitch[:-shift] = self.cache_pitch[shift:].clone()
             self.cache_pitchf[:-shift] = self.cache_pitchf[shift:].clone()
-            self.cache_pitch[4 - pitch.shape[0] :] = pitch[3:-1]
-            self.cache_pitchf[4 - pitch.shape[0] :] = pitchf[3:-1]
+            self.cache_pitch[4 - pitch.shape[0]:] = pitch[3:-1]
+            self.cache_pitchf[4 - pitch.shape[0]:] = pitchf[3:-1]
             cache_pitch = self.cache_pitch[None, -p_len:]
             cache_pitchf = (
-                self.cache_pitchf[None, -p_len:] * return_length2 / return_length
+                    self.cache_pitchf[None, -p_len:] * return_length2 / return_length
             )
         t4 = ttime()
         feats = F.interpolate(feats.permute(0, 2, 1), scale_factor=2).permute(0, 2, 1)

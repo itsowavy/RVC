@@ -1,7 +1,8 @@
 import platform
+
+import av
 import ffmpeg
 import numpy as np
-import av
 
 
 def wav2(i, o, format):

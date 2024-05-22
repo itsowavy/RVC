@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -14,12 +14,12 @@ cpu = torch.device("cpu")
 
 class ConvTDFNetTrim:
     def __init__(
-        self, device, model_name, target_name, L, dim_f, dim_t, n_fft, hop=1024
+            self, device, model_name, target_name, L, dim_f, dim_t, n_fft, hop=1024
     ):
         super(ConvTDFNetTrim, self).__init__()
 
         self.dim_f = dim_f
-        self.dim_t = 2**dim_t
+        self.dim_t = 2 ** dim_t
         self.n_fft = n_fft
         self.hop = hop
         self.n_bins = self.n_fft // 2 + 1
@@ -158,7 +158,7 @@ class Predictor:
             mix_waves = []
             i = 0
             while i < n_sample + pad:
-                waves = np.array(mix_p[:, i : i + model.chunk_size])
+                waves = np.array(mix_p[:, i: i + model.chunk_size])
                 mix_waves.append(waves)
                 i += gen_size
             mix_waves = torch.tensor(mix_waves, dtype=torch.float32).to(cpu)
@@ -167,8 +167,8 @@ class Predictor:
                 spek = model.stft(mix_waves)
                 if self.args.denoise:
                     spec_pred = (
-                        -_ort.run(None, {"input": -spek.cpu().numpy()})[0] * 0.5
-                        + _ort.run(None, {"input": spek.cpu().numpy()})[0] * 0.5
+                            -_ort.run(None, {"input": -spek.cpu().numpy()})[0] * 0.5
+                            + _ort.run(None, {"input": spek.cpu().numpy()})[0] * 0.5
                     )
                     tar_waves = model.istft(torch.tensor(spec_pred))
                 else:
