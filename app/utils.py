@@ -11,7 +11,7 @@ import sounddevice as sd
 import torch
 
 from app import constants
-from app.constants import SETTING_FILE_PATH, SPEAKERS_FILE_PATH, PTH_DIR_PATH, INDEX_DIR_PATH
+from app.constants import SETTING_FILE_PATH, SPEAKERS_FILE_PATH, PTH_DIR_PATH, INDEX_DIR_PATH, DATA_DIR_PATH
 from app.io_device import IODevice, DeviceType
 from app.speaker import Speaker, SpeakerStatus
 
@@ -34,6 +34,8 @@ def save_setting(input_device: IODevice, output_device: IODevice, pitch: int):
         "input_device": input_device.to_json() if input_device else None,
         "output_device": output_device.to_json() if output_device else None
     }
+
+    os.makedirs(DATA_DIR_PATH, exist_ok=True)
     with open(SETTING_FILE_PATH, "w") as f:
         json.dump(data_json, f)
 
@@ -159,6 +161,7 @@ def load_latest_speakers():
 
 def save_speakers_to_json(speakers: List[Speaker]):
     speakers_json = [json.loads(s.to_json()) for s in speakers]
+    os.makedirs(DATA_DIR_PATH, exist_ok=True)
     with open(SPEAKERS_FILE_PATH, 'w') as f:
         json.dump(speakers_json, f)
 

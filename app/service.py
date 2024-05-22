@@ -16,5 +16,7 @@ def download_from_s3(key: str, file_path: str):
 
 
 def download_index_pth(speaker_name: str):
+    os.makedirs(PTH_DIR_PATH, exist_ok=True)
+    os.makedirs(INDEX_DIR_PATH, exist_ok=True)
     download_from_s3(f"pth/{speaker_name}.pth", os.path.join(PTH_DIR_PATH, f"{speaker_name}.pth"))
     download_from_s3(f"index/{speaker_name}.index", os.path.join(INDEX_DIR_PATH, f"{speaker_name}.index"))
