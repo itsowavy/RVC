@@ -1,5 +1,10 @@
 import os
 import signal
+import sys
+# 애플리케이션 루트 디렉토리를 sys.path에 추가
+app_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if app_root not in sys.path:
+    sys.path.insert(0, app_root)
 from multiprocessing import Manager, freeze_support
 
 import uvicorn
@@ -15,10 +20,10 @@ if __name__ == '__main__':
     from app.speaker import SpeakerStatus
     from app.utils import get_io_devices, load_speakers_from_json, save_speakers_to_json
     from app.service import download_index_pth
-    from .setup import initialize, shut_down
-    from .interface import Interface
-    from .utils import get_filepath, save_audio
-from .schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse, \
+    from app.setup import initialize, shut_down
+    from app.interface import Interface
+    from app.utils import get_filepath, save_audio
+from app.schemas import StreamRequest, SettingResponse, RecordRequest, SpeakersListResponse, SpeakerResponse, \
     ConvertRequest
 
 app = FastAPI()
